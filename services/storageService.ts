@@ -1,3 +1,4 @@
+
 import { AppState, PjsRecord, Client } from '../types';
 
 const STORAGE_KEY = 'hma_sistem_data';
@@ -108,7 +109,8 @@ export const loadFromStorage = (): AppState => {
         invCounter: parsed.invCounter || 1,
         firmLogo: parsed.firmLogo || null,
         currentPage: parsed.currentPage || 'guaman',
-        activeClientIdx: validatedIdx
+        activeClientIdx: validatedIdx,
+        theme: parsed.theme || 'dark'
       };
     } catch (e) {
       console.error("Failed to parse stored state", e);
@@ -121,6 +123,7 @@ export const loadFromStorage = (): AppState => {
     invCounter: 1,
     firmLogo: null,
     currentPage: 'guaman',
-    activeClientIdx: null
+    activeClientIdx: null,
+    theme: 'dark'
   };
 };

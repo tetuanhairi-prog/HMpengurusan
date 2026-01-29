@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { PageId, AppState, Client, PjsRecord, ServiceItem, LedgerEntry } from './types';
+import { PageId, AppState, Client, PjsRecord, ServiceItem, LedgerEntry, ThemeMode } from './types';
 import { loadFromStorage, saveToStorage } from './services/storageService';
 import { syncToSheets } from './services/syncService';
 import Navbar from './components/Navbar';
@@ -21,6 +21,8 @@ const App: React.FC = () => {
   // Automatically save state to storage whenever it changes
   useEffect(() => {
     saveToStorage(state);
+    // Update body background for seamless theme transition
+    document.body.style.backgroundColor = state.theme === 'dark' ? '#0f0f0f' : '#f8f9fa';
   }, [state]);
 
   // Check for shared records in URL hash
@@ -45,6 +47,10 @@ const App: React.FC = () => {
 
   const updateState = (updates: Partial<AppState>) => {
     setState(prev => ({ ...prev, ...updates }));
+  };
+
+  const toggleTheme = () => {
+    updateState({ theme: state.theme === 'dark' ? 'light' : 'dark' });
   };
 
   const addClient = (client: Omit<Client, 'id' | 'ledger'>, initialFee: number) => {
@@ -115,21 +121,29 @@ const App: React.FC = () => {
     updateState({ activeClientIdx: idx });
   };
 
-  const { currentPage, activeClientIdx, clients, pjsRecords, inventory, invCounter, firmLogo } = state;
+  const { currentPage, activeClientIdx, clients, pjsRecords, inventory, invCounter, firmLogo, theme } = state;
   
   const showLedger = currentPage === 'guaman' && activeClientIdx !== null && activeClientIdx < clients.length;
 
+  const isDarkMode = theme === 'dark';
+
   return (
-    <div className="min-h-screen pb-10">
+    <div className={`min-h-screen pb-10 transition-colors duration-500 ${isDarkMode ? 'bg-[#0f0f0f]' : 'bg-[#f8f9fa]'}`}>
       <div className="max-w-6xl mx-auto px-4 py-8 no-print">
-        <div className="bg-[#111] rounded-xl border border-[#333] shadow-2xl overflow-hidden">
-          <Header logo={firmLogo} onLogoChange={(logo) => updateState({ firmLogo: logo })} />
+        <div className={`rounded-xl border shadow-2xl overflow-hidden transition-all ${isDarkMode ? 'bg-[#111] border-[#333]' : 'bg-white border-gray-200'}`}>
+          <Header 
+            logo={firmLogo} 
+            theme={theme} 
+            onLogoChange={(logo) => updateState({ firmLogo: logo })} 
+            onToggleTheme={toggleTheme}
+          />
           <Navbar currentPage={currentPage} onPageChange={setCurrentPage} />
           
           <main className="p-6 md:p-10">
             {currentPage === 'guaman' && (
               <GuamanPage 
                 clients={clients} 
+                theme={theme}
                 onAdd={addClient} 
                 onDelete={deleteClient}
                 onOpenLedger={setOpenLedger}
@@ -139,6 +153,7 @@ const App: React.FC = () => {
             {currentPage === 'pjs' && (
               <PjsPage 
                 records={pjsRecords} 
+                theme={theme}
                 onAdd={addPjsRecord} 
                 onDelete={deletePjsRecord}
                 onImport={(data) => updateState({ pjsRecords: data })}
@@ -147,6 +162,7 @@ const App: React.FC = () => {
             {currentPage === 'inventory' && (
               <InventoryPage 
                 services={inventory} 
+                theme={theme}
                 onAdd={addService} 
                 onDelete={deleteService}
                 onImport={(data) => updateState({ inventory: data })}

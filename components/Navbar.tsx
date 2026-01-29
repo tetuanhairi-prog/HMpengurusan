@@ -9,29 +9,29 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ currentPage, onPageChange }) => {
   const links: { id: PageId; label: string; icon: string }[] = [
-    { id: 'guaman', label: 'Guaman', icon: 'fa-gavel' },
-    { id: 'pjs', label: 'PJS', icon: 'fa-stamp' },
-    { id: 'inventory', label: 'Servis', icon: 'fa-briefcase' },
-    { id: 'invoice', label: 'Jana Resit', icon: 'fa-receipt' },
+    { id: 'guaman', label: 'GUAMAN', icon: 'fa-gavel' },
+    { id: 'pjs', label: 'REKOD PJS', icon: 'fa-stamp' },
+    { id: 'inventory', label: 'SENARAI SERVIS', icon: 'fa-briefcase' },
+    { id: 'invoice', label: 'JANA RESIT/INV', icon: 'fa-receipt' },
   ];
 
   return (
-    <nav className="bg-[#222] border-b border-[#333] p-1 flex overflow-x-auto no-scrollbar">
-      <div className="flex mx-auto gap-1">
+    <nav className="bg-[#0a0a0a] border-b border-[#333] p-2 flex overflow-x-auto no-scrollbar">
+      <div className="flex mx-auto gap-3">
         {links.map((link) => (
           <button
             key={link.id}
             onClick={() => onPageChange(link.id)}
             className={`
-              whitespace-nowrap px-4 py-3 text-sm font-bold transition-all flex items-center gap-2
+              whitespace-nowrap px-8 py-3.5 text-[11px] font-black transition-all flex items-center gap-3 uppercase tracking-[0.15em]
               ${currentPage === link.id 
-                ? 'bg-[#FFD700] text-black rounded-md' 
-                : 'text-[#FFD700] hover:bg-white/5'
+                ? 'bg-[#FFD700] text-black rounded-xl shadow-[0_0_20px_rgba(255,215,0,0.3)] ring-2 ring-black/5' 
+                : 'text-gray-100 hover:text-[#FFD700] hover:bg-white/5 rounded-xl border border-white/5'
               }
             `}
           >
-            <i className={`fas ${link.icon}`}></i>
-            <span className="hidden sm:inline">{link.label}</span>
+            <i className={`fas ${link.icon} ${currentPage === link.id ? 'text-black' : 'text-[#FFD700]/70'}`}></i>
+            <span>{link.label}</span>
           </button>
         ))}
       </div>

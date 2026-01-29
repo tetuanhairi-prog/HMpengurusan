@@ -27,6 +27,7 @@ export interface ServiceItem {
 }
 
 export type PageId = 'guaman' | 'pjs' | 'inventory' | 'invoice';
+export type ThemeMode = 'light' | 'dark';
 
 export interface AppState {
   clients: Client[];
@@ -36,4 +37,5 @@ export interface AppState {
   firmLogo: string | null;
   currentPage: PageId;
   activeClientIdx: number | null;
+  theme: ThemeMode;
 }
