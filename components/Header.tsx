@@ -8,10 +8,13 @@ interface HeaderProps {
   theme: ThemeMode;
   onLogoChange: (logo: string) => void;
   onToggleTheme: () => void;
+  onBackup: () => void;
+  onRestore: (file: File) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ logo, theme, onLogoChange, onToggleTheme }) => {
+const Header: React.FC<HeaderProps> = ({ logo, theme, onLogoChange, onToggleTheme, onBackup, onRestore }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const restoreInputRef = useRef<HTMLInputElement>(null);
   const displayLogo = logo || DEFAULT_LOGO;
   const isDarkMode = theme === 'dark';
 
@@ -28,16 +31,44 @@ const Header: React.FC<HeaderProps> = ({ logo, theme, onLogoChange, onToggleThem
     }
   };
 
+  const handleRestoreClick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onRestore(file);
+      // Reset input so the same file can be picked again if needed
+      e.target.value = '';
+    }
+  };
+
   return (
     <header className="bg-gradient-to-br from-[#FFD700] to-[#FFA500] p-6 text-center shadow-lg relative">
-      {/* Theme Toggle Button */}
-      <button 
-        onClick={onToggleTheme}
-        className="absolute top-6 right-6 w-12 h-12 rounded-full bg-black text-[#FFD700] flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all z-20 border border-white/10"
-        title={`Tukar ke Mode ${isDarkMode ? 'Cahaya' : 'Gelap'}`}
-      >
-        <i className={`fas ${isDarkMode ? 'fa-sun' : 'fa-moon'} text-xl`}></i>
-      </button>
+      {/* System Controls Group */}
+      <div className="absolute top-6 right-6 flex flex-col sm:flex-row gap-3 z-20">
+        <div className="flex gap-2">
+          <button 
+            onClick={onBackup}
+            className="w-10 h-10 rounded-xl bg-black text-[#FFD700] flex items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-all border border-white/10"
+            title="Backup Semua Data"
+          >
+            <i className="fas fa-cloud-download-alt"></i>
+          </button>
+          <button 
+            onClick={() => restoreInputRef.current?.click()}
+            className="w-10 h-10 rounded-xl bg-black text-[#FFD700] flex items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-all border border-white/10"
+            title="Restore Data dari Fail"
+          >
+            <i className="fas fa-cloud-upload-alt"></i>
+          </button>
+        </div>
+        
+        <button 
+          onClick={onToggleTheme}
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black text-[#FFD700] flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all border border-white/10"
+          title={`Tukar ke Mode ${isDarkMode ? 'Cahaya' : 'Gelap'}`}
+        >
+          <i className={`fas ${isDarkMode ? 'fa-sun' : 'fa-moon'} text-xl`}></i>
+        </button>
+      </div>
 
       <div className="flex flex-col items-center gap-2">
         <div className="bg-white/90 p-2 rounded-lg shadow-inner mb-2">
@@ -58,11 +89,20 @@ const Header: React.FC<HeaderProps> = ({ logo, theme, onLogoChange, onToggleThem
         >
           <i className="fas fa-image mr-1"></i> Tukar Logo Firma
         </button>
+        
+        {/* Hidden File Inputs */}
         <input 
           type="file" 
           ref={fileInputRef} 
           onChange={handleLogoUpload} 
           accept="image/*" 
+          className="hidden" 
+        />
+        <input 
+          type="file" 
+          ref={restoreInputRef} 
+          onChange={handleRestoreClick} 
+          accept=".json" 
           className="hidden" 
         />
       </div>

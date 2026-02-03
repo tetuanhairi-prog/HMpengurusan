@@ -116,6 +116,49 @@ const App: React.FC = () => {
     updateState({ activeClientIdx: idx });
   };
 
+  // Full System Backup Logic
+  const handleBackup = () => {
+    try {
+      const dataStr = JSON.stringify(state, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const date = new Date().toISOString().split('T')[0];
+      link.href = url;
+      link.download = `HMA_DATA_BACKUP_${date}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      alert("Gagal melakukan backup data.");
+      console.error(error);
+    }
+  };
+
+  // Full System Restore Logic
+  const handleRestore = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const json = JSON.parse(e.target?.result as string);
+        // Basic validation check
+        if (!json.clients || !json.pjsRecords) {
+          throw new Error("Format fail tidak sah.");
+        }
+        
+        if (confirm("AMARAN: Semua data sedia ada akan dipadam dan diganti dengan data dari fail backup ini. Teruskan?")) {
+          setState(json);
+          alert("Data berjaya dipulihkan (Restore Complete).");
+        }
+      } catch (error) {
+        alert("Ralat: Fail tidak sah atau rosak.");
+        console.error(error);
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const { currentPage, activeClientIdx, clients, pjsRecords, inventory, invCounter, firmLogo, theme } = state;
   const showLedger = currentPage === 'guaman' && activeClientIdx !== null && activeClientIdx < clients.length;
   const isDarkMode = theme === 'dark';
@@ -129,6 +172,8 @@ const App: React.FC = () => {
             theme={theme} 
             onLogoChange={(logo) => updateState({ firmLogo: logo })} 
             onToggleTheme={toggleTheme}
+            onBackup={handleBackup}
+            onRestore={handleRestore}
           />
           <Navbar currentPage={currentPage} onPageChange={setCurrentPage} />
           
