@@ -9,6 +9,8 @@ export interface Client {
   id: string;
   name: string;
   detail: string;
+  phone?: string;
+  address?: string;
   ledger: LedgerEntry[];
 }
 

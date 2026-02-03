@@ -12,20 +12,16 @@ import InvoicePage from './components/InvoicePage';
 import Receipt from './components/Receipt';
 
 const App: React.FC = () => {
-  // Use lazy initialization for performance and reliable persistence on refresh
   const [state, setState] = useState<AppState>(() => loadFromStorage());
   const [receiptData, setReceiptData] = useState<any>(null);
   const [isClosingLedger, setIsClosingLedger] = useState(false);
   const [sharedPjsRecord, setSharedPjsRecord] = useState<PjsRecord | null>(null);
 
-  // Automatically save state to storage whenever it changes
   useEffect(() => {
     saveToStorage(state);
-    // Update body background for seamless theme transition
     document.body.style.backgroundColor = state.theme === 'dark' ? '#0f0f0f' : '#f8f9fa';
   }, [state]);
 
-  // Check for shared records in URL hash
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash;
@@ -109,7 +105,6 @@ const App: React.FC = () => {
   
   const handleCloseLedger = () => {
     setIsClosingLedger(true);
-    // Sync with index.html animation duration (0.3s)
     setTimeout(() => {
       updateState({ activeClientIdx: null });
       setIsClosingLedger(false);
@@ -122,9 +117,7 @@ const App: React.FC = () => {
   };
 
   const { currentPage, activeClientIdx, clients, pjsRecords, inventory, invCounter, firmLogo, theme } = state;
-  
   const showLedger = currentPage === 'guaman' && activeClientIdx !== null && activeClientIdx < clients.length;
-
   const isDarkMode = theme === 'dark';
 
   return (
@@ -192,11 +185,10 @@ const App: React.FC = () => {
             className={`bg-white w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border-[6px] border-black transition-all duration-300 ${isClosingLedger ? 'animate-slideDown' : 'animate-slideUp'}`}
             onClick={e => e.stopPropagation()}
           >
-            {/* Modal Header */}
             <div className="p-6 bg-black text-white flex justify-between items-center relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFD700] rotate-45 translate-x-16 -translate-y-16 opacity-10"></div>
               <div className="relative z-10">
-                <p className="text-[10px] font-black text-[#FFD700] uppercase tracking-[0.3em] mb-1">Penyata Akaun Fail</p>
+                <p className="text-[10px] font-black text-[#FFD700] uppercase tracking-[0.3em] mb-1">Buku Penyata Akaun Fail</p>
                 <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter leading-none">{clients[activeClientIdx].name}</h2>
                 <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">{clients[activeClientIdx].detail}</p>
               </div>
@@ -205,18 +197,25 @@ const App: React.FC = () => {
                   onClick={() => {
                     const client = clients[activeClientIdx!];
                     setReceiptData({
+                      docType: 'STATEMENT',
                       title: "PENYATA AKAUN FAIL",
                       customer: client.name,
-                      docNo: `STMT-${Date.now()}`,
-                      date: new Date().toISOString().split('T')[0],
-                      items: client.ledger.map(t => ({ name: `${t.date} - ${t.desc}`, price: t.amt })),
+                      customerAddress: client.address,
+                      customerPhone: client.phone,
+                      docNo: `STMT-${Date.now().toString().slice(-6)}`,
+                      date: new Date().toLocaleDateString('en-MY'),
+                      items: client.ledger.map(t => ({ 
+                        name: `[${t.date}] - ${t.desc}`, 
+                        price: t.amt 
+                      })),
                       total: client.ledger.reduce((s, t) => s + t.amt, 0),
-                      isStatement: true
+                      isStatement: true,
+                      autoPrint: false
                     });
                   }}
-                  className="bg-[#FFD700] text-black px-4 py-2 rounded-xl text-xs font-black uppercase tracking-tight hover:bg-[#FFA500] transition-all shadow-lg active:scale-95"
+                  className="bg-[#FFD700] text-black px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-tight hover:bg-[#FFA500] transition-all shadow-lg active:scale-95 border border-black/10"
                 >
-                  <i className="fas fa-print mr-2"></i> Cetak Penyata
+                  <i className="fas fa-file-pdf mr-2"></i> Jana Penyata (PDF)
                 </button>
                 <button 
                   onClick={handleCloseLedger} 
@@ -228,8 +227,8 @@ const App: React.FC = () => {
             </div>
 
             <div className="p-6 overflow-y-auto bg-gray-50 flex-grow">
-              <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 mb-6">
-                <p className="text-[10px] font-black uppercase text-gray-400 mb-4 tracking-widest text-center">Rekod Transaksi Baru</p>
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mb-6">
+                <p className="text-[10px] font-black uppercase text-gray-400 mb-4 tracking-widest text-center italic">Masukkan Transaksi Caj / Bayaran Baru</p>
                 <LedgerForm onAdd={(entry) => updateLedger(activeClientIdx!, entry)} />
               </div>
               
@@ -238,8 +237,8 @@ const App: React.FC = () => {
                   <thead>
                     <tr className="bg-black text-white text-[10px] uppercase font-black tracking-widest">
                       <th className="p-4">Tarikh</th>
-                      <th className="p-4">Keterangan Transaksi</th>
-                      <th className="p-4 text-right">Amaun (RM)</th>
+                      <th className="p-4">Butiran Transaksi</th>
+                      <th className="p-4 text-right">Debit/Kredit (RM)</th>
                       <th className="p-4 w-12"></th>
                     </tr>
                   </thead>
@@ -247,7 +246,7 @@ const App: React.FC = () => {
                     {clients[activeClientIdx].ledger.map((t, i) => (
                       <tr key={i} className="text-sm hover:bg-gray-50 transition-colors group">
                         <td className="p-4 text-gray-400 font-bold tabular-nums whitespace-nowrap">{t.date}</td>
-                        <td className="p-4 text-gray-900 font-black uppercase tracking-tight">{t.desc}</td>
+                        <td className="p-4 text-gray-900 font-black uppercase tracking-tight leading-tight">{t.desc}</td>
                         <td className={`p-4 text-right font-black text-lg tabular-nums tracking-tighter ${t.amt < 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {t.amt.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
                         </td>
@@ -267,19 +266,18 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* Modal Footer Summary */}
-            <div className="p-6 bg-white border-t-4 border-black flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400">
-                  <i className="fas fa-calculator"></i>
+            <div className="p-6 bg-white border-t-4 border-black flex justify-between items-center shadow-[0_-10px_20px_rgba(0,0,0,0.03)]">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400 shadow-inner">
+                  <i className="fas fa-calculator text-xl"></i>
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Statistik Fail</p>
-                  <p className="text-xs font-bold text-gray-600 uppercase">{clients[activeClientIdx].ledger.length} Transaksi Direkodkan</p>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Ringkasan Fail</p>
+                  <p className="text-xs font-bold text-gray-700 uppercase">{clients[activeClientIdx].ledger.length} Transaksi Direkod</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1 italic">Baki Tertunggak Keseluruhan</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1 italic">Jumlah Baki Akhir</p>
                 <div className={`text-4xl font-black tracking-tighter tabular-nums ${clients[activeClientIdx].ledger.reduce((s,t) => s + t.amt, 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
                   RM {clients[activeClientIdx].ledger.reduce((s,t) => s + t.amt, 0).toLocaleString('en-MY', { minimumFractionDigits: 2 })}
                 </div>
@@ -358,34 +356,34 @@ const LedgerForm: React.FC<{ onAdd: (entry: LedgerEntry) => void }> = ({ onAdd }
   return (
     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
       <div>
-        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest">Tarikh</label>
+        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest">Tarikh Transaksi</label>
         <input 
           type="date" 
           value={date} 
           onChange={e => setDate(e.target.value)} 
-          className="w-full border-2 border-gray-100 rounded-xl p-3 text-sm font-bold focus:border-black transition-all outline-none" 
+          className="w-full border-2 border-gray-100 rounded-xl p-3 text-sm font-bold focus:border-[#FFD700] transition-all outline-none" 
         />
       </div>
       <div className="md:col-span-2">
-        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest">Keterangan Caj / Bayaran</label>
+        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest">Keterangan (Debit / Kredit)</label>
         <input 
           type="text" 
           value={desc} 
           onChange={e => setDesc(e.target.value)} 
-          placeholder="Cth: Bayaran Ansuran / Caj Tambahan Fail" 
-          className="w-full border-2 border-gray-100 rounded-xl p-3 text-sm font-bold focus:border-black transition-all outline-none uppercase" 
+          placeholder="Cth: BAYARAN ANSURAN / CAJ FAIL" 
+          className="w-full border-2 border-gray-100 rounded-xl p-3 text-sm font-bold focus:border-[#FFD700] transition-all outline-none uppercase" 
         />
       </div>
       <div>
-        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest">Amaun (RM)</label>
+        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest">Amaun RM (+/-)</label>
         <div className="flex gap-2">
           <input 
             type="number" 
             step="0.01" 
             value={amt} 
             onChange={e => setAmt(e.target.value)} 
-            placeholder="Cth: 500 atau -500" 
-            className="w-full border-2 border-gray-100 rounded-xl p-3 text-sm font-bold focus:border-black transition-all outline-none" 
+            placeholder="500 / -500" 
+            className="w-full border-2 border-gray-100 rounded-xl p-3 text-sm font-bold focus:border-[#FFD700] transition-all outline-none" 
           />
           <button 
             type="submit" 

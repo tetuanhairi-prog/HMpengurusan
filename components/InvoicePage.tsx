@@ -22,11 +22,14 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
   const [invNo, setInvNo] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   
-  // Maklumat Pelanggan
   const [selectedCustomer, setSelectedCustomer] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
   
+  const [manualDesc, setManualDesc] = useState('');
+  const [manualQty, setManualQty] = useState('1');
+  const [manualPrice, setManualPrice] = useState('');
+
   const [notes, setNotes] = useState('');
   const [currentItems, setCurrentItems] = useState<InvoiceLineItem[]>([]);
   const [showValidation, setShowValidation] = useState(false);
@@ -49,8 +52,8 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
     const client = clients.find(c => c.name === val);
     if (client) {
       setSelectedCustomer(client.name);
-      setCustomerAddress(client.detail || '');
-      setCustomerPhone(''); 
+      setCustomerAddress(client.address || client.detail || ''); 
+      setCustomerPhone(client.phone || ''); 
     } else {
       setSelectedCustomer(val);
     }
@@ -64,8 +67,16 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
     e.target.value = ""; 
   };
 
-  const addManualItem = () => {
-    setCurrentItems([...currentItems, { name: '', price: 0, quantity: 1 }]);
+  const handleQuickAddManual = () => {
+    if (!manualDesc) return alert("Sila isi deskripsi perkhidmatan!");
+    setCurrentItems([...currentItems, { 
+      name: manualDesc.toUpperCase(), 
+      price: parseFloat(manualPrice) || 0, 
+      quantity: parseInt(manualQty) || 1 
+    }]);
+    setManualDesc('');
+    setManualQty('1');
+    setManualPrice('');
   };
 
   const updateItem = (idx: number, field: keyof InvoiceLineItem, value: string) => {
@@ -86,7 +97,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
 
   const total = currentItems.reduce((s, i) => s + (i.price * i.quantity), 0);
 
-  const processInvoice = (mode: 'standard' | 'thermal') => {
+  const processInvoice = (mode: 'standard' | 'thermal', autoPrint: boolean = true) => {
     if (!selectedCustomer) {
       setShowValidation(true);
       return;
@@ -113,19 +124,23 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
         price: it.price * it.quantity
       })),
       total: total,
-      autoPrint: true,
+      autoPrint: autoPrint,
       printMode: mode
     });
 
+    // Reset state after processing
     setCurrentItems([]);
     setNotes('');
     setShowValidation(false);
+    setSelectedCustomer('');
+    setCustomerPhone('');
+    setCustomerAddress('');
   };
 
   return (
     <div className="bg-[#f8f9fa] text-black p-6 md:p-10 rounded-3xl shadow-inner border border-gray-300 animate-slideUp">
       
-      {/* Tab Selector - Invois / Resit / Sebutharga */}
+      {/* Tab Selector */}
       <div className="flex justify-center mb-10">
         <div className="bg-gray-200 p-2 rounded-2xl flex gap-2 shadow-inner border border-gray-300 w-full max-w-xl">
           {(['RECEIPT', 'INVOICE', 'QUOTATION'] as DocType[]).map((type) => (
@@ -134,7 +149,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
               onClick={() => setDocType(type)}
               className={`flex-1 py-4 px-4 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
                 docType === type 
-                ? 'bg-black text-[#FFD700] shadow-lg' 
+                ? 'bg-black text-[#FFD700] shadow-lg scale-[1.02]' 
                 : 'text-gray-700 hover:text-black hover:bg-gray-300'
               }`}
             >
@@ -144,7 +159,6 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
         </div>
       </div>
 
-      {/* Maklumat Header & No Rujukan */}
       <div className="flex flex-col md:flex-row justify-between gap-6 mb-10 pb-8 border-b border-gray-300">
         <div className="space-y-1">
           <label className="block text-[10px] font-black uppercase text-black tracking-widest">No. Rujukan ({docType})</label>
@@ -158,19 +172,18 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
             type="date" 
             value={date} 
             onChange={e => setDate(e.target.value)} 
-            className="w-full border-2 border-gray-300 bg-white p-3.5 rounded-xl focus:border-black focus:ring-4 focus:ring-black/5 outline-none transition-all font-bold text-black" 
+            className="w-full border-2 border-gray-300 bg-white p-3.5 rounded-xl focus:border-[#FFD700] focus:ring-4 focus:ring-[#FFD700]/20 outline-none transition-all font-bold text-black" 
           />
         </div>
       </div>
 
-      {/* Maklumat Pelanggan (Manual/Auto) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 bg-white p-8 rounded-[30px] border-2 border-gray-200 shadow-sm">
         <div className="space-y-6">
           <div className="flex flex-col gap-2">
             <label className="block text-[10px] font-black uppercase text-black tracking-widest ml-1">Pilih Pelanggan (Carian Sistem)</label>
             <select 
               onChange={handleCustomerSelect}
-              className="w-full border-2 border-gray-300 bg-white p-4 rounded-xl font-bold text-black outline-none focus:border-black focus:ring-4 focus:ring-black/5 shadow-sm transition-all"
+              className="w-full border-2 border-gray-300 bg-white p-4 rounded-xl font-bold text-black outline-none focus:border-black shadow-sm transition-all cursor-pointer"
             >
               <option value="MANUAL" className="text-black font-bold">-- MASUKKAN SECARA MANUAL --</option>
               {clients.map(c => <option key={c.id} value={c.name} className="text-black">{c.name}</option>)}
@@ -186,7 +199,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
               value={selectedCustomer}
               onChange={e => setSelectedCustomer(e.target.value.toUpperCase())}
               placeholder="NAMA PENUH"
-              className={`w-full border-2 p-4 rounded-xl font-black uppercase focus:border-black focus:ring-4 focus:ring-black/5 outline-none transition-all text-black ${showValidation && !selectedCustomer ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'}`}
+              className={`w-full border-2 p-4 rounded-xl font-black uppercase focus:border-[#FFD700] focus:ring-4 focus:ring-[#FFD700]/20 outline-none transition-all text-black ${showValidation && !selectedCustomer ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'}`}
             />
           </div>
         </div>
@@ -199,7 +212,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
               value={customerPhone}
               onChange={e => setCustomerPhone(e.target.value)}
               placeholder="Cth: 01156531310"
-              className="w-full border-2 border-gray-300 bg-white p-4 rounded-xl font-bold text-black focus:border-black focus:ring-4 focus:ring-black/5 outline-none transition-all shadow-sm"
+              className="w-full border-2 border-gray-300 bg-white p-4 rounded-xl font-bold text-black focus:border-[#FFD700] outline-none transition-all shadow-sm"
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -208,22 +221,21 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
               value={customerAddress}
               onChange={e => setCustomerAddress(e.target.value.toUpperCase())}
               placeholder="ALAMAT LENGKAP"
-              className="w-full border-2 border-gray-300 bg-white p-4 rounded-xl font-bold text-black focus:border-black focus:ring-4 focus:ring-black/5 outline-none transition-all h-[110px] resize-none uppercase shadow-sm"
+              className="w-full border-2 border-gray-300 bg-white p-4 rounded-xl font-bold text-black focus:border-[#FFD700] outline-none transition-all h-[110px] resize-none uppercase shadow-sm"
             ></textarea>
           </div>
         </div>
       </div>
 
-      {/* Pilihan Servis (Inventory/Manual) */}
       <div className="mb-10 bg-white p-8 rounded-[30px] border-2 border-gray-200 shadow-sm">
-        <div className="flex flex-col md:flex-row gap-6 mb-8">
-          <div className="flex-grow">
-            <label className="block text-[10px] font-black uppercase text-black mb-3 ml-1 tracking-widest">Pilih Servis (Inventori)</label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          <div>
+            <label className="block text-[10px] font-black uppercase text-black mb-3 ml-1 tracking-widest">Pilih Servis (Dari Inventori)</label>
             <select 
               onChange={addItemFromInventory}
-              className="w-full border-2 border-black bg-white p-5 rounded-2xl focus:ring-4 focus:ring-black/5 outline-none font-black text-sm cursor-pointer shadow-md text-black"
+              className="w-full border-2 border-black bg-white p-5 rounded-2xl focus:ring-4 focus:ring-black/10 outline-none font-black text-sm cursor-pointer shadow-md text-black"
             >
-              <option value="" className="text-black">+ KLIK UNTUK CARI SERVIS SEDIA ADA</option>
+              <option value="" className="text-black">+ KLIK UNTUK CARI SERVIS SISTEM</option>
               {services.map(s => (
                 <option key={s.id} value={JSON.stringify(s)} className="text-black">
                   {s.name} — RM {s.price.toFixed(2)}
@@ -231,17 +243,43 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
               ))}
             </select>
           </div>
-          <div className="flex items-end">
-            <button 
-              onClick={addManualItem}
-              className="w-full md:w-auto bg-[#FFD700] text-black px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-black hover:text-[#FFD700] transition-all flex items-center justify-center gap-3 border border-black/10 active:scale-95"
-            >
-              <i className="fas fa-plus-circle text-lg"></i> ISI MANUAL
-            </button>
+
+          <div className="bg-gray-50 p-6 rounded-2xl border-2 border-dashed border-gray-300">
+             <label className="block text-[10px] font-black uppercase text-gray-400 mb-4 ml-1 tracking-widest text-center">ISI MANUAL (QUICK ADD)</label>
+             <div className="flex flex-col gap-3">
+                <input 
+                  type="text" 
+                  value={manualDesc}
+                  onChange={e => setManualDesc(e.target.value)}
+                  placeholder="KETERANGAN SERVIS..."
+                  className="w-full border-2 border-gray-200 bg-white p-3 rounded-xl font-black uppercase text-xs focus:border-[#FFD700] outline-none"
+                />
+                <div className="flex gap-3">
+                   <input 
+                      type="number" 
+                      value={manualQty}
+                      onChange={e => setManualQty(e.target.value)}
+                      placeholder="UNIT"
+                      className="w-20 border-2 border-gray-200 bg-white p-3 rounded-xl font-black text-center focus:border-[#FFD700] outline-none"
+                   />
+                   <input 
+                      type="number" 
+                      value={manualPrice}
+                      onChange={e => setManualPrice(e.target.value)}
+                      placeholder="HARGA RM"
+                      className="flex-grow border-2 border-gray-200 bg-white p-3 rounded-xl font-black focus:border-[#FFD700] outline-none"
+                   />
+                   <button 
+                      onClick={handleQuickAddManual}
+                      className="bg-black text-[#FFD700] px-6 rounded-xl font-black text-xs hover:bg-gray-800 transition-all active:scale-95 shadow-lg"
+                   >
+                     <i className="fas fa-plus"></i> TAMBAH
+                   </button>
+                </div>
+             </div>
           </div>
         </div>
 
-        {/* Jadual Item */}
         <div className="overflow-hidden border-2 border-black rounded-[25px] shadow-2xl bg-white">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -272,7 +310,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
                         value={it.name}
                         onChange={(e) => updateItem(idx, 'name', e.target.value)}
                         placeholder="MASUKKAN KETERANGAN..."
-                        className="w-full font-black text-lg uppercase leading-tight bg-transparent border-b-2 border-transparent focus:border-black p-2 rounded outline-none transition-all text-black"
+                        className="w-full font-black text-lg uppercase leading-tight bg-transparent border-b-2 border-transparent focus:border-[#FFD700] p-2 rounded outline-none transition-all text-black"
                       />
                     </td>
                     <td className="p-6">
@@ -281,7 +319,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
                         min="1"
                         value={it.quantity}
                         onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
-                        className="w-full border-2 border-gray-200 bg-white p-3 rounded-xl text-center font-black focus:border-black outline-none transition-all shadow-inner text-black"
+                        className="w-full border-2 border-gray-200 bg-white p-3 rounded-xl text-center font-black focus:border-[#FFD700] outline-none transition-all shadow-inner text-black"
                       />
                     </td>
                     <td className="p-6">
@@ -290,7 +328,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
                         step="0.01"
                         value={it.price || ''}
                         onChange={(e) => updateItem(idx, 'price', e.target.value)}
-                        className="w-full border-2 border-gray-200 bg-white p-3 rounded-xl text-center font-black focus:border-black outline-none transition-all shadow-inner text-black"
+                        className="w-full border-2 border-gray-200 bg-white p-3 rounded-xl text-center font-black focus:border-[#FFD700] outline-none transition-all shadow-inner text-black"
                         placeholder="0.00"
                       />
                     </td>
@@ -316,7 +354,6 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
         </div>
       </div>
 
-      {/* Nota & Ringkasan */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 pt-10 border-t-2 border-gray-300 items-start">
         <div className="lg:col-span-1">
           <label className="block text-[10px] font-black uppercase text-black mb-3 ml-1 tracking-widest">Nota / Terma Dokumen</label>
@@ -324,18 +361,18 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
             value={notes}
             onChange={e => setNotes(e.target.value)}
             placeholder="Cth: Sila buat bayaran ke akaun CIMB..."
-            className="w-full border-2 border-gray-300 bg-white p-5 rounded-3xl focus:border-black focus:ring-4 focus:ring-black/5 outline-none transition-all font-bold text-sm h-40 resize-none shadow-sm text-black"
+            className="w-full border-2 border-gray-300 bg-white p-5 rounded-3xl focus:border-[#FFD700] outline-none transition-all font-bold text-sm h-40 resize-none shadow-sm text-black"
           ></textarea>
         </div>
 
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-10">
           <div className="bg-black p-10 rounded-[45px] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 border-b-[12px] border-[#FFD700]">
             <div className="flex items-center gap-8">
-              <div className="w-20 h-20 bg-[#FFD700] rounded-[25px] flex items-center justify-center text-black shadow-2xl ring-4 ring-white/10">
+              <div className="w-20 h-20 bg-white rounded-[25px] flex items-center justify-center text-black shadow-2xl ring-4 ring-white/10">
                 <i className="fas fa-coins text-4xl"></i>
               </div>
               <div>
-                <p className="text-[12px] font-black uppercase tracking-[0.4em] text-[#FFD700] mb-2 opacity-80">JUMLAH KESELURUHAN (TOTAL)</p>
+                <p className="text-[12px] font-black uppercase tracking-[0.4em] text-[#FFD700] mb-2">JUMLAH KESELURUHAN (TOTAL)</p>
                 <h3 className="text-7xl font-black tracking-tighter tabular-nums text-white leading-none">
                   RM {total.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
                 </h3>
@@ -343,31 +380,31 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-5">
-            {/* Butang Standard (A5) */}
-            <button 
-              onClick={() => processInvoice('standard')}
-              disabled={currentItems.length === 0}
-              className="flex-1 bg-white text-black border-[3px] border-black py-6 rounded-[25px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-gray-100 active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-3 text-sm"
-            >
-              <i className="fas fa-print text-xl"></i> CETAK (A5)
-            </button>
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col md:flex-row gap-6">
+              <button 
+                onClick={() => processInvoice('standard', true)}
+                disabled={currentItems.length === 0}
+                className="flex-1 bg-white text-black border-[3px] border-black py-6 rounded-[24px] font-black uppercase tracking-[0.25em] shadow-xl hover:bg-gray-50 active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-4 text-xs"
+              >
+                <i className="fas fa-print text-2xl"></i> CETAK (A5)
+              </button>
 
-            {/* Butang Thermal Printer / Bluetooth */}
-            <button 
-              onClick={() => processInvoice('thermal')}
-              disabled={currentItems.length === 0}
-              className="flex-1 bg-black text-[#FFD700] py-6 rounded-[25px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center gap-4 border-b-4 border-[#FFA500] text-sm"
-            >
-              <i className="fas fa-bolt text-2xl"></i> THERMAL (80MM)
-            </button>
+              <button 
+                onClick={() => processInvoice('thermal', true)}
+                disabled={currentItems.length === 0}
+                className="flex-1 bg-black text-[#FFD700] py-6 rounded-[24px] font-black uppercase tracking-[0.25em] shadow-2xl hover:bg-gray-900 active:scale-95 transition-all flex items-center justify-center gap-4 border-b-4 border-[#FFA500] text-xs"
+              >
+                <i className="fas fa-bolt text-3xl"></i> THERMAL (80MM)
+              </button>
+            </div>
 
-            {/* Butang Simpan / PDF */}
             <button 
-              onClick={() => processInvoice('standard')}
-              className="w-full bg-gray-700 text-white py-6 rounded-[25px] font-black uppercase tracking-[0.2em] shadow-lg hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-3 text-sm"
+              onClick={() => processInvoice('standard', false)}
+              disabled={currentItems.length === 0}
+              className="w-full bg-[#2c333f] text-white py-6 rounded-[24px] font-black uppercase tracking-[0.25em] shadow-2xl hover:bg-[#1a1f26] active:scale-95 transition-all flex items-center justify-center gap-4 text-xs disabled:opacity-30 border-b-4 border-black/30"
             >
-              <i className="fas fa-save text-xl"></i> SIMPAN PDF / REKOD
+              <i className="fas fa-file-pdf text-2xl"></i> SIMPAN PDF / REKOD
             </button>
           </div>
         </div>

@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { PjsRecord, ThemeMode } from '../types';
 import { exportToCSV, parseCSV } from '../utils/csvUtils';
 
@@ -25,6 +25,12 @@ const PjsPage: React.FC<PjsPageProps> = ({ records, theme, onAdd, onDelete, onIm
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isDarkMode = theme === 'dark';
+
+  const displayYear = useMemo(() => {
+    if (records.length === 0) return new Date().getFullYear();
+    const latestDate = [...records].sort((a, b) => b.date.localeCompare(a.date))[0].date;
+    return new Date(latestDate).getFullYear();
+  }, [records]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,18 +128,17 @@ const PjsPage: React.FC<PjsPageProps> = ({ records, theme, onAdd, onDelete, onIm
 
   const monthlyData = useMemo(() => {
     const months = ["Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogo", "Sep", "Okt", "Nov", "Dis"];
-    const currentYear = new Date().getFullYear();
     const totals = new Array(12).fill(0);
 
     records.forEach(rec => {
       const d = new Date(rec.date);
-      if (d.getFullYear() === currentYear) {
+      if (d.getFullYear() === displayYear) {
         totals[d.getMonth()] += rec.amount;
       }
     });
 
     return months.map((m, i) => ({ month: m, total: totals[i] }));
-  }, [records]);
+  }, [records, displayYear]);
 
   const maxTotal = Math.max(...monthlyData.map(d => d.total), 1);
 
@@ -143,6 +148,9 @@ const PjsPage: React.FC<PjsPageProps> = ({ records, theme, onAdd, onDelete, onIm
       ? <i className="fas fa-sort-up ml-1"></i> 
       : <i className="fas fa-sort-down ml-1"></i>;
   };
+
+  // Enhanced input class with strong gold focus state
+  const inputClass = `w-full border-2 p-3.5 rounded-xl font-bold transition-all text-black bg-white border-gray-300 focus:outline-none focus:border-[#FFD700] focus:ring-4 focus:ring-[#FFD700]/30 outline-none`;
 
   return (
     <div className="animate-fadeIn">
@@ -168,11 +176,12 @@ const PjsPage: React.FC<PjsPageProps> = ({ records, theme, onAdd, onDelete, onIm
         </div>
       </div>
 
-      {/* Visual Analytics Section */}
       <div className={`p-6 rounded-2xl border mb-8 shadow-xl transition-colors ${isDarkMode ? 'bg-[#111] border-[#333]' : 'bg-gray-50 border-gray-200'}`}>
         <div className="flex items-center gap-3 mb-6">
           <div className="w-1.5 h-6 bg-[#FFD700] rounded-full"></div>
-          <h3 className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-[#FFD700]' : 'text-gray-900'}`}>Prestasi Bulanan (Kutipan RM)</h3>
+          <h3 className={`text-xs font-black uppercase tracking-widest ${isDarkMode ? 'text-[#FFD700]' : 'text-gray-900'}`}>
+            Prestasi Bulanan {displayYear} (Kutipan RM)
+          </h3>
         </div>
         
         <div className="relative h-48 flex items-end justify-between gap-1 md:gap-4 px-2">
@@ -186,30 +195,27 @@ const PjsPage: React.FC<PjsPageProps> = ({ records, theme, onAdd, onDelete, onIm
                   </div>
                   <div className="w-2 h-2 bg-[#FFD700] rotate-45 mx-auto -mt-1"></div>
                 </div>
-                
                 <div 
                   className="w-full bg-[#FFD700] rounded-t-sm transition-all duration-700 ease-out shadow-[0_-4px_10px_rgba(255,215,0,0.2)] group-hover:bg-[#FFA500] group-hover:scale-x-105"
                   style={{ height: `${Math.max(heightPercentage, 2)}%` }}
                 ></div>
-                
                 <span className={`text-[10px] font-bold mt-3 transition-colors ${isDarkMode ? 'text-gray-500 group-hover:text-white' : 'text-gray-400 group-hover:text-gray-900'}`}>{d.month}</span>
               </div>
             );
           })}
-          
           <div className={`absolute bottom-6 left-0 right-0 h-px ${isDarkMode ? 'bg-[#333]' : 'bg-gray-200'}`}></div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className={`p-6 rounded-2xl border mb-8 shadow-lg transition-colors ${isDarkMode ? 'bg-[#1a1a1a] border-[#333]' : 'bg-white border-gray-200'}`}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <form onSubmit={handleSubmit} className={`p-8 rounded-2xl border mb-8 shadow-lg transition-colors ${isDarkMode ? 'bg-[#1a1a1a] border-[#333]' : 'bg-white border-gray-200'}`}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
           <div>
             <label className={`block text-[10px] font-black uppercase mb-2 tracking-widest ${isDarkMode ? 'text-[#FFD700]' : 'text-gray-500'}`}>Tarikh</label>
             <input 
               type="date" 
               value={date} 
               onChange={e => setDate(e.target.value)} 
-              className={`w-full border p-3 rounded-xl focus:outline-none focus:border-[#FFD700] font-bold transition-colors ${isDarkMode ? 'bg-[#222] border-[#333] text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} 
+              className={inputClass} 
             />
           </div>
           <div>
@@ -218,7 +224,7 @@ const PjsPage: React.FC<PjsPageProps> = ({ records, theme, onAdd, onDelete, onIm
               type="text" 
               value={name} 
               onChange={e => setName(e.target.value)} 
-              className={`w-full border p-3 rounded-xl focus:outline-none focus:border-[#FFD700] font-bold transition-colors ${isDarkMode ? 'bg-[#222] border-[#333] text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} 
+              className={inputClass} 
               placeholder="NAMA PENUH"
             />
           </div>
@@ -228,7 +234,7 @@ const PjsPage: React.FC<PjsPageProps> = ({ records, theme, onAdd, onDelete, onIm
               type="text" 
               value={detail} 
               onChange={e => setDetail(e.target.value)} 
-              className={`w-full border p-3 rounded-xl focus:outline-none focus:border-[#FFD700] font-bold transition-colors ${isDarkMode ? 'bg-[#222] border-[#333] text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} 
+              className={inputClass} 
               placeholder="Cth: AKUAN BERKANUN"
             />
           </div>
@@ -239,7 +245,7 @@ const PjsPage: React.FC<PjsPageProps> = ({ records, theme, onAdd, onDelete, onIm
               step="0.01"
               value={amount} 
               onChange={e => setAmount(e.target.value)} 
-              className={`w-full border p-3 rounded-xl focus:outline-none focus:border-[#FFD700] font-bold transition-colors ${isDarkMode ? 'bg-[#222] border-[#333] text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`} 
+              className={inputClass} 
               placeholder="10.00"
             />
           </div>

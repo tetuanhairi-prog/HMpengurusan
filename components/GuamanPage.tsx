@@ -6,7 +6,7 @@ import { exportToCSV, parseCSV } from '../utils/csvUtils';
 interface GuamanPageProps {
   clients: Client[];
   theme: ThemeMode;
-  onAdd: (client: { name: string; detail: string }, fee: number) => void;
+  onAdd: (client: { name: string; detail: string; phone?: string; address?: string }, fee: number) => void;
   onDelete: (id: string) => void;
   onOpenLedger: (idx: number) => void;
   onImport: (data: Client[]) => void;
@@ -15,6 +15,8 @@ interface GuamanPageProps {
 const GuamanPage: React.FC<GuamanPageProps> = ({ clients, theme, onAdd, onDelete, onOpenLedger, onImport }) => {
   const [name, setName] = useState('');
   const [detail, setDetail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
   const [fee, setFee] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isDarkMode = theme === 'dark';
@@ -22,15 +24,22 @@ const GuamanPage: React.FC<GuamanPageProps> = ({ clients, theme, onAdd, onDelete
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name) return alert("Nama diperlukan!");
-    onAdd({ name: name.toUpperCase(), detail }, parseFloat(fee) || 0);
-    setName(''); setDetail(''); setFee('');
+    onAdd({ 
+      name: name.toUpperCase(), 
+      detail: detail.toUpperCase(), 
+      phone, 
+      address: address.toUpperCase() 
+    }, parseFloat(fee) || 0);
+    setName(''); setDetail(''); setPhone(''); setAddress(''); setFee('');
   };
 
   const handleExport = () => {
-    const headers = ["Name", "Detail", "Balance"];
+    const headers = ["Name", "Detail", "Phone", "Address", "Balance"];
     const data = clients.map(c => ({
       name: c.name,
       detail: c.detail,
+      phone: c.phone || "",
+      address: c.address || "",
       balance: c.ledger.reduce((s, e) => s + e.amt, 0).toFixed(2)
     }));
     exportToCSV("HMA_Guaman", headers, data);
@@ -44,7 +53,9 @@ const GuamanPage: React.FC<GuamanPageProps> = ({ clients, theme, onAdd, onDelete
       const importedClients: Client[] = rawData.map(row => ({
         id: crypto.randomUUID(),
         name: (row.name || "UNNAMED").toUpperCase(),
-        detail: row.detail || "",
+        detail: (row.detail || "").toUpperCase(),
+        phone: row.phone || "",
+        address: row.address || "",
         ledger: [{
           date: new Date().toISOString().split('T')[0],
           desc: "IMPORTED BALANCE",
@@ -75,15 +86,25 @@ const GuamanPage: React.FC<GuamanPageProps> = ({ clients, theme, onAdd, onDelete
       </div>
 
       <form onSubmit={handleSubmit} className={`p-6 rounded-lg border mb-8 transition-colors ${isDarkMode ? 'bg-[#1a1a1a] border-[#333]' : 'bg-gray-50 border-gray-200'}`}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           <div>
             <label className={`block text-[10px] font-bold uppercase mb-2 ${isDarkMode ? 'text-[#FFD700]' : 'text-gray-500'}`}>Nama Pelanggan</label>
             <input 
               type="text" 
               value={name} 
               onChange={e => setName(e.target.value)} 
-              className={`w-full border p-3 rounded-md focus:outline-none focus:border-[#FFD700] transition-colors ${isDarkMode ? 'bg-[#222] border-[#333] text-white' : 'bg-white border-gray-200 text-gray-900'}`} 
+              className={`w-full border p-3 rounded-md focus:outline-none focus:border-[#FFD700] transition-colors text-black bg-white border-gray-200`} 
               placeholder="Cth: ALI BIN ABU" 
+            />
+          </div>
+          <div>
+            <label className={`block text-[10px] font-bold uppercase mb-2 ${isDarkMode ? 'text-[#FFD700]' : 'text-gray-500'}`}>No. Telefon</label>
+            <input 
+              type="text" 
+              value={phone} 
+              onChange={e => setPhone(e.target.value)} 
+              className={`w-full border p-3 rounded-md focus:outline-none focus:border-[#FFD700] transition-colors text-black bg-white border-gray-200`} 
+              placeholder="Cth: 0123456789" 
             />
           </div>
           <div>
@@ -92,8 +113,18 @@ const GuamanPage: React.FC<GuamanPageProps> = ({ clients, theme, onAdd, onDelete
               type="text" 
               value={detail} 
               onChange={e => setDetail(e.target.value)} 
-              className={`w-full border p-3 rounded-md focus:outline-none focus:border-[#FFD700] transition-colors ${isDarkMode ? 'bg-[#222] border-[#333] text-white' : 'bg-white border-gray-200 text-gray-900'}`} 
+              className={`w-full border p-3 rounded-md focus:outline-none focus:border-[#FFD700] transition-colors text-black bg-white border-gray-200`} 
               placeholder="Cth: Hak Jagaan Anak" 
+            />
+          </div>
+          <div className="lg:col-span-2">
+            <label className={`block text-[10px] font-bold uppercase mb-2 ${isDarkMode ? 'text-[#FFD700]' : 'text-gray-500'}`}>Alamat Penuh</label>
+            <input 
+              type="text" 
+              value={address} 
+              onChange={e => setAddress(e.target.value)} 
+              className={`w-full border p-3 rounded-md focus:outline-none focus:border-[#FFD700] transition-colors text-black bg-white border-gray-200`} 
+              placeholder="LOT 123, JALAN BALING..." 
             />
           </div>
           <div>
@@ -102,7 +133,7 @@ const GuamanPage: React.FC<GuamanPageProps> = ({ clients, theme, onAdd, onDelete
               type="number" 
               value={fee} 
               onChange={e => setFee(e.target.value)} 
-              className={`w-full border p-3 rounded-md focus:outline-none focus:border-[#FFD700] transition-colors ${isDarkMode ? 'bg-[#222] border-[#333] text-white' : 'bg-white border-gray-200 text-gray-900'}`} 
+              className={`w-full border p-3 rounded-md focus:outline-none focus:border-[#FFD700] transition-colors text-black bg-white border-gray-200`} 
               placeholder="Cth: 2500" 
             />
           </div>
@@ -131,7 +162,10 @@ const GuamanPage: React.FC<GuamanPageProps> = ({ clients, theme, onAdd, onDelete
                 return (
                   <tr key={client.id} className={`transition-colors ${isDarkMode ? 'hover:bg-[#1a1a1a]' : 'hover:bg-gray-50'}`}>
                     <td className={`p-4 font-bold uppercase ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{client.name}</td>
-                    <td className={`p-4 italic text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{client.detail}</td>
+                    <td className={`p-4 italic text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      {client.detail}
+                      {client.phone && <div className="text-[10px] not-italic opacity-60 font-black">Tel: {client.phone}</div>}
+                    </td>
                     <td className={`p-4 text-right font-black text-lg ${balance > 0 ? 'text-red-500' : 'text-green-500'}`}>
                       {balance.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
                     </td>
