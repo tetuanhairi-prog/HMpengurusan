@@ -255,12 +255,12 @@ const App: React.FC = () => {
                       })),
                       total: client.ledger.reduce((s, t) => s + t.amt, 0),
                       isStatement: true,
-                      autoPrint: false
+                      autoPrint: true
                     });
                   }}
                   className="bg-[#FFD700] text-black px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-tight hover:bg-[#FFA500] transition-all shadow-lg active:scale-95 border border-black/10"
                 >
-                  <i className="fas fa-file-pdf mr-2"></i> Jana Penyata (PDF)
+                  <i className="fas fa-print mr-2"></i> Jana & Cetak Penyata
                 </button>
                 <button 
                   onClick={handleCloseLedger} 
@@ -333,8 +333,8 @@ const App: React.FC = () => {
       )}
 
       {receiptData && (
-        <div id="receipt-print" className="fixed inset-0 z-[100] bg-white overflow-y-auto p-4 md:p-10 no-print-backdrop">
-           <div className="max-w-[148mm] mx-auto">
+        <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl overflow-y-auto p-4 md:p-10 no-print animate-fadeIn">
+           <div className="max-w-[148mm] mx-auto shadow-[0_0_100px_rgba(0,0,0,0.5)]">
             <Receipt data={receiptData} logo={firmLogo} onClose={() => setReceiptData(null)} />
            </div>
         </div>

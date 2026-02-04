@@ -26,6 +26,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
   
+  // Manual entry state
   const [manualDesc, setManualDesc] = useState('');
   const [manualQty, setManualQty] = useState('1');
   const [manualPrice, setManualPrice] = useState('');
@@ -67,16 +68,25 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
     e.target.value = ""; 
   };
 
-  const handleQuickAddManual = () => {
-    if (!manualDesc) return alert("Sila isi deskripsi perkhidmatan!");
-    setCurrentItems([...currentItems, { 
-      name: manualDesc.toUpperCase(), 
-      price: parseFloat(manualPrice) || 0, 
-      quantity: parseInt(manualQty) || 1 
-    }]);
+  const handleManualAdd = () => {
+    if (!manualDesc.trim()) {
+      alert("Sila masukkan butiran perkhidmatan.");
+      return;
+    }
+    const newItem: InvoiceLineItem = {
+      name: manualDesc.toUpperCase(),
+      price: parseFloat(manualPrice) || 0,
+      quantity: parseInt(manualQty) || 1
+    };
+    setCurrentItems([...currentItems, newItem]);
+    // Clear manual fields
     setManualDesc('');
     setManualQty('1');
     setManualPrice('');
+  };
+
+  const addEmptyRow = () => {
+    setCurrentItems([...currentItems, { name: '', price: 0, quantity: 1 }]);
   };
 
   const updateItem = (idx: number, field: keyof InvoiceLineItem, value: string) => {
@@ -102,7 +112,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
       setShowValidation(true);
       return;
     }
-    if (currentItems.length === 0) return alert("Sila tambah item!");
+    if (currentItems.length === 0) return alert("Sila tambah item ke dalam senarai!");
 
     const titleMap = {
       'RECEIPT': 'RESIT RASMI',
@@ -128,7 +138,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
       printMode: mode
     });
 
-    // Reset state after processing
+    // Reset page state
     setCurrentItems([]);
     setNotes('');
     setShowValidation(false);
@@ -137,10 +147,12 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
     setCustomerAddress('');
   };
 
+  const hmInputClass = "w-full border-2 border-gray-300 bg-white p-4 rounded-xl font-bold text-black focus:border-[#FFD700] focus:ring-4 focus:ring-[#FFD700]/20 outline-none transition-all shadow-sm";
+
   return (
-    <div className="bg-[#f8f9fa] text-black p-6 md:p-10 rounded-3xl shadow-inner border border-gray-300 animate-slideUp">
+    <div className="bg-[#f8f9fa] text-black p-6 md:p-10 rounded-[40px] shadow-2xl border border-gray-300 animate-slideUp">
       
-      {/* Tab Selector */}
+      {/* Document Type Selection */}
       <div className="flex justify-center mb-10">
         <div className="bg-gray-200 p-2 rounded-2xl flex gap-2 shadow-inner border border-gray-300 w-full max-w-xl">
           {(['RECEIPT', 'INVOICE', 'QUOTATION'] as DocType[]).map((type) => (
@@ -149,7 +161,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
               onClick={() => setDocType(type)}
               className={`flex-1 py-4 px-4 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
                 docType === type 
-                ? 'bg-black text-[#FFD700] shadow-lg scale-[1.02]' 
+                ? 'bg-black text-[#FFD700] shadow-xl scale-[1.02] ring-4 ring-[#FFD700]/20' 
                 : 'text-gray-700 hover:text-black hover:bg-gray-300'
               }`}
             >
@@ -159,145 +171,193 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between gap-6 mb-10 pb-8 border-b border-gray-300">
+      {/* Reference & Date */}
+      <div className="flex flex-col md:flex-row justify-between gap-6 mb-10 pb-8 border-b-2 border-dashed border-gray-300">
         <div className="space-y-1">
-          <label className="block text-[10px] font-black uppercase text-black tracking-widest">No. Rujukan ({docType})</label>
-          <div className="text-2xl font-black tracking-tighter tabular-nums bg-white px-5 py-3 rounded-xl border-2 border-gray-300 inline-block text-black shadow-sm">
+          <label className="block text-[10px] font-black uppercase text-gray-500 tracking-[0.2em] ml-1">No. Rujukan ({docType})</label>
+          <div className="text-3xl font-black tracking-widest tabular-nums bg-white px-6 py-4 rounded-2xl border-2 border-black inline-block text-black shadow-lg">
             {invNo}
           </div>
         </div>
-        <div className="space-y-1 min-w-[220px]">
-          <label className="block text-[10px] font-black uppercase text-black tracking-widest">Tarikh Dokumen</label>
+        <div className="space-y-1 min-w-[240px]">
+          <label className="block text-[10px] font-black uppercase text-gray-500 tracking-[0.2em] ml-1">Tarikh Dokumen</label>
           <input 
             type="date" 
             value={date} 
             onChange={e => setDate(e.target.value)} 
-            className="w-full border-2 border-gray-300 bg-white p-3.5 rounded-xl focus:border-[#FFD700] focus:ring-4 focus:ring-[#FFD700]/20 outline-none transition-all font-bold text-black" 
+            className={`${hmInputClass} text-lg`}
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10 bg-white p-8 rounded-[30px] border-2 border-gray-200 shadow-sm">
-        <div className="space-y-6">
-          <div className="flex flex-col gap-2">
-            <label className="block text-[10px] font-black uppercase text-black tracking-widest ml-1">Pilih Pelanggan (Carian Sistem)</label>
-            <select 
-              onChange={handleCustomerSelect}
-              className="w-full border-2 border-gray-300 bg-white p-4 rounded-xl font-bold text-black outline-none focus:border-black shadow-sm transition-all cursor-pointer"
-            >
-              <option value="MANUAL" className="text-black font-bold">-- MASUKKAN SECARA MANUAL --</option>
-              {clients.map(c => <option key={c.id} value={c.name} className="text-black">{c.name}</option>)}
-              <option value="PELANGGAN TUNAI" className="text-black">PELANGGAN TUNAI (CASH)</option>
-            </select>
+      {/* Customer Information Section */}
+      <div className="mb-10 bg-white p-8 md:p-10 rounded-[35px] border-2 border-gray-200 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-2 h-full bg-black"></div>
+        <h3 className="font-legal text-xl font-bold mb-8 flex items-center gap-3">
+          <i className="fas fa-user-tie text-[#FFD700]"></i> Maklumat Pelanggan / Client Details
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="space-y-6">
+            <div className="flex flex-col gap-2">
+              <label className="block text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Carian Sistem (Guaman)</label>
+              <select 
+                onChange={handleCustomerSelect}
+                className="w-full border-2 border-gray-300 bg-gray-50 p-4 rounded-xl font-bold text-black outline-none focus:border-black shadow-sm transition-all cursor-pointer"
+              >
+                <option value="MANUAL">-- MASUKKAN SECARA MANUAL --</option>
+                {clients.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                <option value="PELANGGAN TUNAI">PELANGGAN TUNAI (CASH)</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className={`block text-[10px] font-black uppercase tracking-widest ml-1 ${showValidation && !selectedCustomer ? 'text-red-600' : 'text-gray-400'}`}>
+                Nama Penuh Pelanggan {showValidation && !selectedCustomer && <span className="font-black">(! WAJIB)</span>}
+              </label>
+              <input 
+                type="text" 
+                value={selectedCustomer}
+                onChange={e => setSelectedCustomer(e.target.value.toUpperCase())}
+                placeholder="NAMA PENUH"
+                className={`${hmInputClass} uppercase ${showValidation && !selectedCustomer ? 'border-red-500 bg-red-50' : ''}`}
+              />
+            </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <label className={`block text-[10px] font-black uppercase tracking-widest ml-1 ${showValidation && !selectedCustomer ? 'text-red-600' : 'text-black'}`}>
-              Nama Pelanggan {showValidation && !selectedCustomer && <span className="font-black">(! WAJIB)</span>}
-            </label>
-            <input 
-              type="text" 
-              value={selectedCustomer}
-              onChange={e => setSelectedCustomer(e.target.value.toUpperCase())}
-              placeholder="NAMA PENUH"
-              className={`w-full border-2 p-4 rounded-xl font-black uppercase focus:border-[#FFD700] focus:ring-4 focus:ring-[#FFD700]/20 outline-none transition-all text-black ${showValidation && !selectedCustomer ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'}`}
-            />
-          </div>
-        </div>
 
-        <div className="space-y-6">
-          <div className="flex flex-col gap-2">
-            <label className="block text-[10px] font-black uppercase text-black tracking-widest ml-1">No. Telefon Pelanggan</label>
-            <input 
-              type="text" 
-              value={customerPhone}
-              onChange={e => setCustomerPhone(e.target.value)}
-              placeholder="Cth: 01156531310"
-              className="w-full border-2 border-gray-300 bg-white p-4 rounded-xl font-bold text-black focus:border-[#FFD700] outline-none transition-all shadow-sm"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="block text-[10px] font-black uppercase text-black tracking-widest ml-1">Alamat Pelanggan</label>
-            <textarea 
-              value={customerAddress}
-              onChange={e => setCustomerAddress(e.target.value.toUpperCase())}
-              placeholder="ALAMAT LENGKAP"
-              className="w-full border-2 border-gray-300 bg-white p-4 rounded-xl font-bold text-black focus:border-[#FFD700] outline-none transition-all h-[110px] resize-none uppercase shadow-sm"
-            ></textarea>
+          <div className="space-y-6">
+            <div className="flex flex-col gap-2">
+              <label className="block text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">No. Telefon</label>
+              <input 
+                type="text" 
+                value={customerPhone}
+                onChange={e => setCustomerPhone(e.target.value)}
+                placeholder="012-3456789"
+                className={hmInputClass}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="block text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Alamat Surat-Menyurat</label>
+              <textarea 
+                value={customerAddress}
+                onChange={e => setCustomerAddress(e.target.value.toUpperCase())}
+                placeholder="ALAMAT LENGKAP"
+                className={`${hmInputClass} h-[100px] resize-none uppercase`}
+              ></textarea>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="mb-10 bg-white p-8 rounded-[30px] border-2 border-gray-200 shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          <div>
-            <label className="block text-[10px] font-black uppercase text-black mb-3 ml-1 tracking-widest">Pilih Servis (Dari Inventori)</label>
+      {/* Item Entry Controls - Separated Inventory and Manual Entry */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-10">
+        {/* Inventory Selection */}
+        <div className="lg:col-span-2 bg-white p-8 rounded-[35px] border-2 border-gray-200 shadow-sm relative group overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-gray-50 rounded-full translate-x-12 -translate-y-12"></div>
+          <h3 className="font-legal text-lg font-bold mb-6 flex items-center gap-3 relative z-10">
+            <i className="fas fa-list-check text-gray-400"></i> Pilih Dari Inventori
+          </h3>
+          <div className="relative z-10">
             <select 
               onChange={addItemFromInventory}
               className="w-full border-2 border-black bg-white p-5 rounded-2xl focus:ring-4 focus:ring-black/10 outline-none font-black text-sm cursor-pointer shadow-md text-black"
             >
-              <option value="" className="text-black">+ KLIK UNTUK CARI SERVIS SISTEM</option>
+              <option value="">+ KLIK UNTUK CARI SENARAI SERVIS</option>
               {services.map(s => (
-                <option key={s.id} value={JSON.stringify(s)} className="text-black">
+                <option key={s.id} value={JSON.stringify(s)}>
                   {s.name} — RM {s.price.toFixed(2)}
                 </option>
               ))}
             </select>
-          </div>
-
-          <div className="bg-gray-50 p-6 rounded-2xl border-2 border-dashed border-gray-300">
-             <label className="block text-[10px] font-black uppercase text-gray-400 mb-4 ml-1 tracking-widest text-center">ISI MANUAL (QUICK ADD)</label>
-             <div className="flex flex-col gap-3">
-                <input 
-                  type="text" 
-                  value={manualDesc}
-                  onChange={e => setManualDesc(e.target.value)}
-                  placeholder="KETERANGAN SERVIS..."
-                  className="w-full border-2 border-gray-200 bg-white p-3 rounded-xl font-black uppercase text-xs focus:border-[#FFD700] outline-none"
-                />
-                <div className="flex gap-3">
-                   <input 
-                      type="number" 
-                      value={manualQty}
-                      onChange={e => setManualQty(e.target.value)}
-                      placeholder="UNIT"
-                      className="w-20 border-2 border-gray-200 bg-white p-3 rounded-xl font-black text-center focus:border-[#FFD700] outline-none"
-                   />
-                   <input 
-                      type="number" 
-                      value={manualPrice}
-                      onChange={e => setManualPrice(e.target.value)}
-                      placeholder="HARGA RM"
-                      className="flex-grow border-2 border-gray-200 bg-white p-3 rounded-xl font-black focus:border-[#FFD700] outline-none"
-                   />
-                   <button 
-                      onClick={handleQuickAddManual}
-                      className="bg-black text-[#FFD700] px-6 rounded-xl font-black text-xs hover:bg-gray-800 transition-all active:scale-95 shadow-lg"
-                   >
-                     <i className="fas fa-plus"></i> TAMBAH
-                   </button>
-                </div>
-             </div>
+            <p className="text-[9px] font-black uppercase text-gray-400 mt-4 tracking-widest italic">* Masukkan perkhidmatan berdaftar sedia ada.</p>
           </div>
         </div>
 
-        <div className="overflow-hidden border-2 border-black rounded-[25px] shadow-2xl bg-white">
+        {/* Manual Item Entry Card - Distinct and Separate */}
+        <div className="lg:col-span-3 bg-white p-8 rounded-[35px] border-[3px] border-black shadow-2xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFD700] rotate-45 translate-x-16 -translate-y-16 opacity-20"></div>
+          <h3 className="font-legal text-xl font-bold mb-6 flex items-center gap-3 relative z-10">
+            <i className="fas fa-keyboard text-[#FFD700]"></i> Tambah Perkhidmatan Manual
+          </h3>
+          
+          <div className="flex flex-col gap-5 relative z-10">
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Keterangan / Description</label>
+              <input 
+                type="text" 
+                value={manualDesc}
+                onChange={e => setManualDesc(e.target.value)}
+                placeholder="CTH: CAJ PENGURUSAN DOKUMEN KHAS"
+                className="w-full border-2 border-gray-200 bg-gray-50 p-4 rounded-xl font-black uppercase text-sm focus:border-black focus:bg-white outline-none transition-all shadow-inner"
+              />
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-5">
+              <div className="w-full sm:w-28 space-y-1">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1 block">Unit</label>
+                <input 
+                  type="number" 
+                  value={manualQty}
+                  onChange={e => setManualQty(e.target.value)}
+                  placeholder="1"
+                  className="w-full border-2 border-gray-200 bg-gray-50 p-4 rounded-xl font-black text-center focus:border-black focus:bg-white outline-none shadow-inner"
+                />
+              </div>
+              
+              <div className="flex-grow space-y-1">
+                <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Harga Seunit (RM)</label>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  value={manualPrice}
+                  onChange={e => setManualPrice(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full border-2 border-gray-200 bg-gray-50 p-4 rounded-xl font-black focus:border-black focus:bg-white outline-none shadow-inner"
+                />
+              </div>
+              
+              <div className="flex items-end">
+                <button 
+                  onClick={handleManualAdd}
+                  className="w-full sm:w-auto bg-black text-[#FFD700] px-10 py-4 rounded-xl font-black text-sm hover:bg-gray-800 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-3 h-[58px] border-b-4 border-gray-700"
+                >
+                  <i className="fas fa-plus-circle text-lg"></i> MASUKKAN
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Transaction List Table */}
+      <div className="mb-10">
+        <div className="flex flex-col sm:flex-row justify-between items-center sm:items-end mb-4 px-2 gap-4">
+          <h3 className="font-legal text-2xl font-bold tracking-tight">Senarai Transaksi / Transactions</h3>
+          <button 
+            onClick={addEmptyRow}
+            className="bg-gray-100 text-gray-600 hover:bg-gray-200 px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-widest transition-all border border-gray-200 active:scale-95 flex items-center gap-2"
+          >
+            <i className="fas fa-plus"></i> Tambah Baris Kosong
+          </button>
+        </div>
+        
+        <div className="overflow-hidden border-2 border-black rounded-[35px] shadow-2xl bg-white">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-black text-white">
-                <th className="p-5 text-[10px] font-black uppercase tracking-widest">Butiran Perkhidmatan</th>
-                <th className="p-5 text-[10px] font-black uppercase tracking-widest text-center w-24">Unit</th>
-                <th className="p-5 text-[10px] font-black uppercase tracking-widest text-center w-36">Harga (RM)</th>
-                <th className="p-5 text-[10px] font-black uppercase tracking-widest text-right w-40">Subtotal</th>
-                <th className="p-5 w-16"></th>
+                <th className="p-6 text-[11px] font-black uppercase tracking-[0.2em]">Butiran / Description</th>
+                <th className="p-6 text-[11px] font-black uppercase tracking-[0.2em] text-center w-28">Unit</th>
+                <th className="p-6 text-[11px] font-black uppercase tracking-[0.2em] text-center w-40">Harga (RM)</th>
+                <th className="p-6 text-[11px] font-black uppercase tracking-[0.2em] text-right w-44">Subtotal</th>
+                <th className="p-6 w-20"></th>
               </tr>
             </thead>
             <tbody className="divide-y-2 divide-gray-100">
               {currentItems.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-20 text-center">
-                    <div className="flex flex-col items-center opacity-20">
-                      <i className="fas fa-box-open text-7xl mb-4 text-black"></i>
-                      <p className="font-black uppercase tracking-[0.2em] text-sm text-black">Belum ada item ditambahkan</p>
+                  <td colSpan={5} className="p-24 text-center">
+                    <div className="flex flex-col items-center opacity-10">
+                      <i className="fas fa-receipt text-[100px] mb-6 text-black"></i>
+                      <p className="font-black uppercase tracking-[0.3em] text-lg text-black">Sila masukkan item perkhidmatan</p>
                     </div>
                   </td>
                 </tr>
@@ -309,8 +369,8 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
                         type="text" 
                         value={it.name}
                         onChange={(e) => updateItem(idx, 'name', e.target.value)}
-                        placeholder="MASUKKAN KETERANGAN..."
-                        className="w-full font-black text-lg uppercase leading-tight bg-transparent border-b-2 border-transparent focus:border-[#FFD700] p-2 rounded outline-none transition-all text-black"
+                        placeholder="BUTIRAN..."
+                        className="w-full font-bold text-xl uppercase leading-tight bg-transparent border-b-2 border-transparent focus:border-[#FFD700] p-2 rounded outline-none transition-all text-black font-legal"
                       />
                     </td>
                     <td className="p-6">
@@ -319,7 +379,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
                         min="1"
                         value={it.quantity}
                         onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
-                        className="w-full border-2 border-gray-200 bg-white p-3 rounded-xl text-center font-black focus:border-[#FFD700] outline-none transition-all shadow-inner text-black"
+                        className="w-full border-2 border-gray-100 bg-white p-4 rounded-xl text-center font-black focus:border-[#FFD700] outline-none transition-all shadow-inner text-black text-lg"
                       />
                     </td>
                     <td className="p-6">
@@ -328,22 +388,22 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
                         step="0.01"
                         value={it.price || ''}
                         onChange={(e) => updateItem(idx, 'price', e.target.value)}
-                        className="w-full border-2 border-gray-200 bg-white p-3 rounded-xl text-center font-black focus:border-[#FFD700] outline-none transition-all shadow-inner text-black"
+                        className="w-full border-2 border-gray-100 bg-white p-4 rounded-xl text-center font-black focus:border-[#FFD700] outline-none transition-all shadow-inner text-black text-lg"
                         placeholder="0.00"
                       />
                     </td>
                     <td className="p-6 text-right">
-                      <span className="font-black text-2xl tracking-tighter tabular-nums text-black">
+                      <span className="font-black text-3xl tracking-tighter tabular-nums text-black">
                         {(it.price * it.quantity).toLocaleString('en-MY', { minimumFractionDigits: 2 })}
                       </span>
                     </td>
                     <td className="p-6 text-center">
                       <button 
                         onClick={() => removeItem(idx)} 
-                        className="w-10 h-10 flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 rounded-2xl transition-all"
+                        className="w-12 h-12 flex items-center justify-center text-gray-300 hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all"
                         title="Buang"
                       >
-                        <i className="fas fa-trash"></i>
+                        <i className="fas fa-trash-can text-lg"></i>
                       </button>
                     </td>
                   </tr>
@@ -354,57 +414,64 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 pt-10 border-t-2 border-gray-300 items-start">
+      {/* Footer Actions & Total */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 pt-12 border-t-2 border-gray-200 items-start">
         <div className="lg:col-span-1">
-          <label className="block text-[10px] font-black uppercase text-black mb-3 ml-1 tracking-widest">Nota / Terma Dokumen</label>
+          <label className="block text-[11px] font-black uppercase text-gray-500 mb-4 ml-1 tracking-widest">Nota Tambahan / Remarks</label>
           <textarea 
             value={notes}
             onChange={e => setNotes(e.target.value)}
-            placeholder="Cth: Sila buat bayaran ke akaun CIMB..."
-            className="w-full border-2 border-gray-300 bg-white p-5 rounded-3xl focus:border-[#FFD700] outline-none transition-all font-bold text-sm h-40 resize-none shadow-sm text-black"
+            placeholder="Arahan pembayaran, tarikh tamat, atau nota tambahan..."
+            className="w-full border-2 border-gray-300 bg-white p-6 rounded-[30px] focus:border-black outline-none transition-all font-bold text-sm h-48 resize-none shadow-sm text-black"
           ></textarea>
         </div>
 
-        <div className="lg:col-span-2 space-y-10">
-          <div className="bg-black p-10 rounded-[45px] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 border-b-[12px] border-[#FFD700]">
-            <div className="flex items-center gap-8">
-              <div className="w-20 h-20 bg-white rounded-[25px] flex items-center justify-center text-black shadow-2xl ring-4 ring-white/10">
-                <i className="fas fa-coins text-4xl"></i>
+        <div className="lg:col-span-2 space-y-12">
+          {/* Total Box */}
+          <div className="bg-black p-10 md:p-14 rounded-[50px] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 border-b-[15px] border-[#FFD700] relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-x-10 -translate-y-20 group-hover:scale-110 transition-transform duration-1000"></div>
+            <div className="flex items-center gap-10 relative z-10">
+              <div className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-[35px] flex items-center justify-center text-[#FFD700] shadow-2xl ring-2 ring-white/20">
+                <i className="fas fa-money-bill-transfer text-5xl"></i>
               </div>
               <div>
-                <p className="text-[12px] font-black uppercase tracking-[0.4em] text-[#FFD700] mb-2">JUMLAH KESELURUHAN (TOTAL)</p>
-                <h3 className="text-7xl font-black tracking-tighter tabular-nums text-white leading-none">
-                  RM {total.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
-                </h3>
+                <p className="text-[13px] font-black uppercase tracking-[0.5em] text-[#FFD700] mb-4 opacity-80">JUMLAH BESAR (TOTAL AMOUNT)</p>
+                <div className="flex items-baseline gap-4">
+                  <span className="text-4xl font-black text-[#FFD700]/50">RM</span>
+                  <h3 className="text-8xl md:text-9xl font-black tracking-tighter tabular-nums text-white leading-none font-legal">
+                    {total.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
+                  </h3>
+                </div>
               </div>
             </div>
           </div>
 
+          {/* Action Buttons */}
           <div className="flex flex-col gap-6">
             <div className="flex flex-col md:flex-row gap-6">
               <button 
                 onClick={() => processInvoice('standard', true)}
                 disabled={currentItems.length === 0}
-                className="flex-1 bg-white text-black border-[3px] border-black py-6 rounded-[24px] font-black uppercase tracking-[0.25em] shadow-xl hover:bg-gray-50 active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-4 text-xs"
+                className="flex-1 bg-white text-black border-[4px] border-black py-8 rounded-[30px] font-black uppercase tracking-[0.3em] shadow-xl hover:bg-gray-50 active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-6 text-sm"
               >
-                <i className="fas fa-print text-2xl"></i> CETAK (A5)
+                <i className="fas fa-print text-3xl"></i> CETAK A5
               </button>
 
               <button 
                 onClick={() => processInvoice('thermal', true)}
                 disabled={currentItems.length === 0}
-                className="flex-1 bg-black text-[#FFD700] py-6 rounded-[24px] font-black uppercase tracking-[0.25em] shadow-2xl hover:bg-gray-900 active:scale-95 transition-all flex items-center justify-center gap-4 border-b-4 border-[#FFA500] text-xs"
+                className="flex-1 bg-black text-[#FFD700] py-8 rounded-[30px] font-black uppercase tracking-[0.3em] shadow-2xl hover:bg-gray-900 active:scale-95 transition-all flex items-center justify-center gap-6 border-b-8 border-[#FFA500] text-sm"
               >
-                <i className="fas fa-bolt text-3xl"></i> THERMAL (80MM)
+                <i className="fas fa-bolt-lightning text-4xl"></i> THERMAL (80MM)
               </button>
             </div>
 
             <button 
               onClick={() => processInvoice('standard', false)}
               disabled={currentItems.length === 0}
-              className="w-full bg-[#2c333f] text-white py-6 rounded-[24px] font-black uppercase tracking-[0.25em] shadow-2xl hover:bg-[#1a1f26] active:scale-95 transition-all flex items-center justify-center gap-4 text-xs disabled:opacity-30 border-b-4 border-black/30"
+              className="w-full bg-[#1e293b] text-white py-8 rounded-[30px] font-black uppercase tracking-[0.3em] shadow-2xl hover:bg-[#0f172a] active:scale-95 transition-all flex items-center justify-center gap-6 text-sm disabled:opacity-30 border-b-8 border-black/50"
             >
-              <i className="fas fa-file-pdf text-2xl"></i> SIMPAN PDF / REKOD
+              <i className="fas fa-save text-3xl text-[#FFD700]"></i> REKOD SISTEM SAHAJA
             </button>
           </div>
         </div>
