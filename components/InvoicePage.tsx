@@ -79,7 +79,6 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
       quantity: parseInt(manualQty) || 1
     };
     setCurrentItems([...currentItems, newItem]);
-    // Clear manual fields
     setManualDesc('');
     setManualQty('1');
     setManualPrice('');
@@ -138,13 +137,16 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
       printMode: mode
     });
 
-    // Reset page state
     setCurrentItems([]);
     setNotes('');
     setShowValidation(false);
     setSelectedCustomer('');
     setCustomerPhone('');
     setCustomerAddress('');
+  };
+
+  const addQuickNote = (text: string) => {
+    setNotes(prev => prev ? `${prev}\n${text}` : text);
   };
 
   const hmInputClass = "w-full border-2 border-gray-300 bg-white p-4 rounded-xl font-bold text-black focus:border-[#FFD700] focus:ring-4 focus:ring-[#FFD700]/20 outline-none transition-all shadow-sm";
@@ -190,7 +192,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
         </div>
       </div>
 
-      {/* Customer Information Section */}
+      {/* Customer Information */}
       <div className="mb-10 bg-white p-8 md:p-10 rounded-[35px] border-2 border-gray-200 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 left-0 w-2 h-full bg-black"></div>
         <h3 className="font-legal text-xl font-bold mb-8 flex items-center gap-3">
@@ -248,9 +250,8 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
         </div>
       </div>
 
-      {/* Item Entry Controls - Separated Inventory and Manual Entry */}
+      {/* Item Entry Controls */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-10">
-        {/* Inventory Selection */}
         <div className="lg:col-span-2 bg-white p-8 rounded-[35px] border-2 border-gray-200 shadow-sm relative group overflow-hidden">
           <div className="absolute top-0 right-0 w-24 h-24 bg-gray-50 rounded-full translate-x-12 -translate-y-12"></div>
           <h3 className="font-legal text-lg font-bold mb-6 flex items-center gap-3 relative z-10">
@@ -268,11 +269,9 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
                 </option>
               ))}
             </select>
-            <p className="text-[9px] font-black uppercase text-gray-400 mt-4 tracking-widest italic">* Masukkan perkhidmatan berdaftar sedia ada.</p>
           </div>
         </div>
 
-        {/* Manual Item Entry Card - Distinct and Separate */}
         <div className="lg:col-span-3 bg-white p-8 rounded-[35px] border-[3px] border-black shadow-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFD700] rotate-45 translate-x-16 -translate-y-16 opacity-20"></div>
           <h3 className="font-legal text-xl font-bold mb-6 flex items-center gap-3 relative z-10">
@@ -328,7 +327,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
         </div>
       </div>
 
-      {/* Transaction List Table */}
+      {/* Item List */}
       <div className="mb-10">
         <div className="flex flex-col sm:flex-row justify-between items-center sm:items-end mb-4 px-2 gap-4">
           <h3 className="font-legal text-2xl font-bold tracking-tight">Senarai Transaksi / Transactions</h3>
@@ -414,16 +413,42 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
         </div>
       </div>
 
-      {/* Footer Actions & Total */}
+      {/* Dedicated Notes & Footer Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 pt-12 border-t-2 border-gray-200 items-start">
-        <div className="lg:col-span-1">
-          <label className="block text-[11px] font-black uppercase text-gray-500 mb-4 ml-1 tracking-widest">Nota Tambahan / Remarks</label>
-          <textarea 
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            placeholder="Arahan pembayaran, tarikh tamat, atau nota tambahan..."
-            className="w-full border-2 border-gray-300 bg-white p-6 rounded-[30px] focus:border-black outline-none transition-all font-bold text-sm h-48 resize-none shadow-sm text-black"
-          ></textarea>
+        <div className="lg:col-span-1 space-y-8">
+          <div className="bg-white p-8 rounded-[35px] border-2 border-gray-200 shadow-sm relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-2 h-full bg-[#FFD700]"></div>
+            <label className="block text-[11px] font-black uppercase text-gray-500 mb-4 ml-1 tracking-widest flex items-center gap-2">
+              <i className="fas fa-pen-nib text-[#FFD700]"></i> Nota Tambahan / Remarks
+            </label>
+            <textarea 
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              placeholder="Arahan pembayaran, tarikh tamat, atau nota tambahan yang akan dipaparkan di dokumen..."
+              className="w-full border-2 border-gray-300 bg-white p-6 rounded-[24px] focus:border-black outline-none transition-all font-bold text-sm h-40 resize-none shadow-inner text-black mb-4"
+            ></textarea>
+            
+            <div className="space-y-3">
+              <p className="text-[9px] font-black uppercase text-gray-400 tracking-[0.2em] ml-1 mb-2">Nota Pantas / Quick Notes:</p>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  "Sila bayar selewatnya 14 hari.",
+                  "Cek atas nama HAIRI MUSTAFA ASSOCIATES.",
+                  "Sebut harga sah selama 30 hari.",
+                  "Terima kasih atas urusan anda.",
+                  "Bayaran ansuran kedua diperlukan."
+                ].map((preset, i) => (
+                  <button 
+                    key={i}
+                    onClick={() => addQuickNote(preset)}
+                    className="bg-gray-100 hover:bg-[#FFD700] hover:text-black text-gray-500 text-[9px] font-black px-4 py-2 rounded-full transition-all border border-gray-200 uppercase tracking-tighter"
+                  >
+                    + {preset.slice(0, 18)}...
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="lg:col-span-2 space-y-12">
@@ -446,33 +471,43 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
             </div>
           </div>
 
-          {/* Action Buttons */}
+          {/* Action Buttons with explicit Save as PDF */}
           <div className="flex flex-col gap-6">
-            <div className="flex flex-col md:flex-row gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <button 
                 onClick={() => processInvoice('standard', true)}
                 disabled={currentItems.length === 0}
-                className="flex-1 bg-white text-black border-[4px] border-black py-8 rounded-[30px] font-black uppercase tracking-[0.3em] shadow-xl hover:bg-gray-50 active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-6 text-sm"
+                className="flex-1 bg-[#FFD700] text-black py-8 rounded-[30px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-[#FFA500] active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-6 text-sm border-b-8 border-black/10"
               >
-                <i className="fas fa-print text-3xl"></i> CETAK A5
+                <i className="fas fa-file-pdf text-4xl"></i> SIMPAN SEBAGAI PDF
               </button>
 
               <button 
                 onClick={() => processInvoice('thermal', true)}
                 disabled={currentItems.length === 0}
-                className="flex-1 bg-black text-[#FFD700] py-8 rounded-[30px] font-black uppercase tracking-[0.3em] shadow-2xl hover:bg-gray-900 active:scale-95 transition-all flex items-center justify-center gap-6 border-b-8 border-[#FFA500] text-sm"
+                className="flex-1 bg-black text-[#FFD700] py-8 rounded-[30px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-gray-900 active:scale-95 transition-all flex items-center justify-center gap-6 border-b-8 border-[#FFA500]/50 text-sm"
               >
-                <i className="fas fa-bolt-lightning text-4xl"></i> THERMAL (80MM)
+                <i className="fas fa-bolt-lightning text-4xl"></i> CETAK THERMAL (80mm)
               </button>
             </div>
 
-            <button 
-              onClick={() => processInvoice('standard', false)}
-              disabled={currentItems.length === 0}
-              className="w-full bg-[#1e293b] text-white py-8 rounded-[30px] font-black uppercase tracking-[0.3em] shadow-2xl hover:bg-[#0f172a] active:scale-95 transition-all flex items-center justify-center gap-6 text-sm disabled:opacity-30 border-b-8 border-black/50"
-            >
-              <i className="fas fa-save text-3xl text-[#FFD700]"></i> REKOD SISTEM SAHAJA
-            </button>
+            <div className="flex flex-col md:flex-row gap-4">
+               <button 
+                onClick={() => processInvoice('standard', true)}
+                disabled={currentItems.length === 0}
+                className="flex-1 bg-white text-black border-[4px] border-black py-6 rounded-[24px] font-black uppercase tracking-[0.2em] shadow-lg hover:bg-gray-50 active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-4 text-xs"
+              >
+                <i className="fas fa-print text-xl"></i> CETAK STANDARD (A5)
+              </button>
+
+              <button 
+                onClick={() => processInvoice('standard', false)}
+                disabled={currentItems.length === 0}
+                className="flex-1 bg-[#1e293b] text-white py-6 rounded-[24px] font-black uppercase tracking-[0.2em] shadow-lg hover:bg-[#0f172a] active:scale-95 transition-all flex items-center justify-center gap-4 text-xs disabled:opacity-30 border-b-4 border-black/50"
+              >
+                <i className="fas fa-save text-xl text-[#FFD700]"></i> REKOD SISTEM SAHAJA
+              </button>
+            </div>
           </div>
         </div>
       </div>

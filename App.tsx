@@ -16,6 +16,7 @@ const App: React.FC = () => {
   const [receiptData, setReceiptData] = useState<any>(null);
   const [isClosingLedger, setIsClosingLedger] = useState(false);
   const [sharedPjsRecord, setSharedPjsRecord] = useState<PjsRecord | null>(null);
+  const [ledgerNotes, setLedgerNotes] = useState('');
 
   useEffect(() => {
     saveToStorage(state);
@@ -108,6 +109,7 @@ const App: React.FC = () => {
     setTimeout(() => {
       updateState({ activeClientIdx: null });
       setIsClosingLedger(false);
+      setLedgerNotes('');
     }, 300);
   };
 
@@ -116,7 +118,6 @@ const App: React.FC = () => {
     updateState({ activeClientIdx: idx });
   };
 
-  // Full System Backup Logic
   const handleBackup = () => {
     try {
       const dataStr = JSON.stringify(state, null, 2);
@@ -136,17 +137,14 @@ const App: React.FC = () => {
     }
   };
 
-  // Full System Restore Logic
   const handleRestore = (file: File) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const json = JSON.parse(e.target?.result as string);
-        // Basic validation check
         if (!json.clients || !json.pjsRecords) {
           throw new Error("Format fail tidak sah.");
         }
-        
         if (confirm("AMARAN: Semua data sedia ada akan dipadam dan diganti dengan data dari fail backup ini. Teruskan?")) {
           setState(json);
           alert("Data berjaya dipulihkan (Restore Complete).");
@@ -249,6 +247,7 @@ const App: React.FC = () => {
                       customerPhone: client.phone,
                       docNo: `STMT-${Date.now().toString().slice(-6)}`,
                       date: new Date().toLocaleDateString('en-MY'),
+                      notes: ledgerNotes,
                       items: client.ledger.map(t => ({ 
                         name: `[${t.date}] - ${t.desc}`, 
                         price: t.amt 
@@ -272,9 +271,20 @@ const App: React.FC = () => {
             </div>
 
             <div className="p-6 overflow-y-auto bg-gray-50 flex-grow">
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mb-6">
-                <p className="text-[10px] font-black uppercase text-gray-400 mb-4 tracking-widest text-center italic">Masukkan Transaksi Caj / Bayaran Baru</p>
-                <LedgerForm onAdd={(entry) => updateLedger(activeClientIdx!, entry)} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                  <p className="text-[10px] font-black uppercase text-gray-400 mb-4 tracking-widest text-center italic">Masukkan Transaksi Baru</p>
+                  <LedgerForm onAdd={(entry) => updateLedger(activeClientIdx!, entry)} />
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                  <p className="text-[10px] font-black uppercase text-gray-400 mb-4 tracking-widest text-center italic">Nota Untuk Penyata Ini</p>
+                  <textarea 
+                    value={ledgerNotes}
+                    onChange={e => setLedgerNotes(e.target.value)}
+                    placeholder="Contoh: Sila bayar tunggakan segera."
+                    className="w-full border-2 border-gray-100 rounded-xl p-3 text-sm font-bold focus:border-[#FFD700] transition-all outline-none h-20 resize-none"
+                  ></textarea>
+                </div>
               </div>
               
               <div className="overflow-hidden border-2 border-black rounded-2xl bg-white shadow-sm">
@@ -399,9 +409,9 @@ const LedgerForm: React.FC<{ onAdd: (entry: LedgerEntry) => void }> = ({ onAdd }
     setDesc(''); setAmt('');
   };
   return (
-    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <div>
-        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest">Tarikh Transaksi</label>
+        <label className="block text-[10px] font-black text-gray-400 uppercase mb-1 tracking-widest">Tarikh</label>
         <input 
           type="date" 
           value={date} 
@@ -409,18 +419,18 @@ const LedgerForm: React.FC<{ onAdd: (entry: LedgerEntry) => void }> = ({ onAdd }
           className="w-full border-2 border-gray-100 rounded-xl p-3 text-sm font-bold focus:border-[#FFD700] transition-all outline-none" 
         />
       </div>
-      <div className="md:col-span-2">
-        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest">Keterangan (Debit / Kredit)</label>
+      <div>
+        <label className="block text-[10px] font-black text-gray-400 uppercase mb-1 tracking-widest">Keterangan</label>
         <input 
           type="text" 
           value={desc} 
           onChange={e => setDesc(e.target.value)} 
-          placeholder="Cth: BAYARAN ANSURAN / CAJ FAIL" 
+          placeholder="Cth: BAYARAN ANSURAN" 
           className="w-full border-2 border-gray-100 rounded-xl p-3 text-sm font-bold focus:border-[#FFD700] transition-all outline-none uppercase" 
         />
       </div>
       <div>
-        <label className="block text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest">Amaun RM (+/-)</label>
+        <label className="block text-[10px] font-black text-gray-400 uppercase mb-1 tracking-widest">Amaun (+/-)</label>
         <div className="flex gap-2">
           <input 
             type="number" 
