@@ -16,7 +16,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onPageChange }) => {
   ];
 
   return (
-    <nav className="bg-[#0a0a0a] border-b border-[#333] p-2 flex overflow-x-auto no-scrollbar">
+    <nav className="bg-slate-900 border-b border-slate-800 p-2 flex overflow-x-auto no-scrollbar">
       <div className="flex mx-auto gap-3">
         {links.map((link) => (
           <button
@@ -25,12 +25,12 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onPageChange }) => {
             className={`
               whitespace-nowrap px-8 py-3.5 text-[11px] font-black transition-all flex items-center gap-3 uppercase tracking-[0.15em]
               ${currentPage === link.id 
-                ? 'bg-[#FFD700] text-black rounded-xl shadow-[0_0_20px_rgba(255,215,0,0.3)] ring-2 ring-black/5' 
-                : 'text-gray-100 hover:text-[#FFD700] hover:bg-white/5 rounded-xl border border-white/5'
+                ? 'bg-legal-gold text-white rounded-xl shadow-[0_0_20px_rgba(197,161,102,0.3)] ring-2 ring-black/5' 
+                : 'text-gray-100 hover:text-legal-gold hover:bg-white/5 rounded-xl border border-white/5'
               }
             `}
           >
-            <i className={`fas ${link.icon} ${currentPage === link.id ? 'text-black' : 'text-[#FFD700]/70'}`}></i>
+            <i className={`fas ${link.icon} ${currentPage === link.id ? 'text-white' : 'text-legal-gold/70'}`}></i>
             <span>{link.label}</span>
           </button>
         ))}

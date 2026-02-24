@@ -80,13 +80,13 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
   // Floating Controls Component for reuse
   const ControlPanel = () => (
     <div className="fixed top-8 right-8 z-[150] flex flex-col items-end gap-4 no-print animate-fadeIn">
-      <div className="bg-black/80 backdrop-blur-md text-[#FFD700] px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 mb-2 shadow-2xl">
+      <div className="bg-black/80 backdrop-blur-md text-legal-gold px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 mb-2 shadow-2xl">
         <i className="fas fa-circle-info mr-2"></i> Pilih "Save as PDF" di menu cetakan
       </div>
       
       <button 
         onClick={() => window.print()} 
-        className="group bg-black text-[#FFD700] px-10 py-5 rounded-2xl font-black text-xs flex items-center gap-6 hover:bg-gray-900 transition-all shadow-2xl uppercase tracking-widest border border-white/20 active:scale-95 w-full justify-between"
+        className="group bg-black text-legal-gold px-10 py-5 rounded-2xl font-black text-xs flex items-center gap-6 hover:bg-gray-900 transition-all shadow-2xl uppercase tracking-widest border border-white/20 active:scale-95 w-full justify-between"
       >
         <span className="flex items-center gap-4">
           <i className="fas fa-print text-xl group-hover:scale-110 transition-transform"></i> 
@@ -97,7 +97,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
 
       <button 
         onClick={() => window.print()} 
-        className="group bg-[#FFD700] text-black px-10 py-5 rounded-2xl font-black text-xs flex items-center gap-6 hover:bg-[#FFA500] transition-all shadow-2xl uppercase tracking-widest border border-black/10 active:scale-95 w-full justify-between"
+        className="group bg-legal-gold text-white px-10 py-5 rounded-2xl font-black text-xs flex items-center gap-6 hover:bg-legal-gold-hover transition-all shadow-2xl uppercase tracking-widest border border-black/10 active:scale-95 w-full justify-between"
       >
         <span className="flex items-center gap-4">
           <i className="fas fa-file-pdf text-xl group-hover:scale-110 transition-transform"></i> 
@@ -117,7 +117,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
 
   if (isThermal) {
     return (
-      <div className="bg-white text-black p-4 w-[80mm] mx-auto font-mono text-[12px] animate-fadeIn relative">
+      <div id="receipt-print" className="bg-white text-black p-4 w-[80mm] mx-auto font-mono text-[12px] animate-fadeIn relative print:m-0 print:w-full">
         <div className="text-center mb-6">
           <img src={displayLogo} alt="Logo" className="h-14 mx-auto mb-2 grayscale" />
           <h1 className="font-bold text-lg leading-tight uppercase">HAIRI MUSTAFA ASSOCIATES</h1>
@@ -168,7 +168,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
   }
 
   return (
-    <div className="text-black p-12 md:p-16 min-h-[210mm] border-[1px] border-black/10 shadow-2xl relative flex flex-col overflow-hidden animate-fadeIn font-legal bg-white" 
+    <div id="receipt-print" className="text-black p-12 md:p-16 min-h-[210mm] border-[1px] border-black/10 shadow-2xl relative flex flex-col overflow-hidden animate-fadeIn font-legal bg-white print:shadow-none print:border-0 print:p-8 print:min-h-0" 
          style={{ background: '#fcfcf9' }}>
       
       {/* High-End Paper Fiber Texture Overlay */}

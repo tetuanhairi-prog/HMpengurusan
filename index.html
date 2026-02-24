@@ -20,11 +20,26 @@
 
         @media print {
             .no-print { display: none !important; }
-            #receipt-print { display: block !important; }
-            body { background-color: white !important; }
+            body { background-color: white !important; color: black !important; }
+            #root { display: block !important; }
+            
+            /* Ensure the receipt or ledger takes full width on print */
+            #receipt-print, .print-content {
+                display: block !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                position: static !important;
+            }
+
             @page {
-                size: A5 portrait;
-                margin: 0;
+                margin: 0.5cm;
+            }
+            
+            /* Specific for A5 if needed, but browser usually handles it */
+            .receipt-a5 {
+                width: 148mm;
+                min-height: 210mm;
             }
         }
 
@@ -63,9 +78,11 @@
   }
 }
 </script>
+<link rel="stylesheet" href="/index.css">
 </head>
 <body>
     <div id="root"></div>
     <script type="module" src="index.tsx"></script>
+<script type="module" src="/index.tsx"></script>
 </body>
 </html>
