@@ -108,6 +108,8 @@ export const loadFromStorage = (): AppState => {
         inventory: parsed.inventory || [],
         invCounter: parsed.invCounter || 1,
         firmLogo: parsed.firmLogo || null,
+        customHeader: parsed.customHeader || '',
+        customFooter: parsed.customFooter || '',
         currentPage: parsed.currentPage || 'guaman',
         activeClientIdx: validatedIdx,
         theme: parsed.theme || 'dark'
@@ -122,6 +124,8 @@ export const loadFromStorage = (): AppState => {
     inventory: [],
     invCounter: 1,
     firmLogo: null,
+    customHeader: '',
+    customFooter: '',
     currentPage: 'guaman',
     activeClientIdx: null,
     theme: 'dark'

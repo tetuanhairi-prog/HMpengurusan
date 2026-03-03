@@ -37,6 +37,8 @@ export interface AppState {
   inventory: ServiceItem[];
   invCounter: number;
   firmLogo: string | null;
+  customHeader: string;
+  customFooter: string;
   currentPage: PageId;
   activeClientIdx: number | null;
   theme: ThemeMode;

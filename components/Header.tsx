@@ -13,23 +13,9 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ logo, theme, onLogoChange, onToggleTheme, onBackup, onRestore }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const restoreInputRef = useRef<HTMLInputElement>(null);
   const displayLogo = logo || DEFAULT_LOGO;
   const isDarkMode = theme === 'dark';
-
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (typeof reader.result === 'string') {
-          onLogoChange(reader.result);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleRestoreClick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -47,26 +33,26 @@ const Header: React.FC<HeaderProps> = ({ logo, theme, onLogoChange, onToggleThem
         <div className="flex gap-2">
           <button 
             onClick={onBackup}
-            className="w-10 h-10 rounded-xl bg-[#111] text-[#FFD700] flex items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-all border border-[#FFD700]/20"
+            className="w-10 h-10 rounded-xl bg-[#0a0a0a] text-[#FFD700] flex items-center justify-center shadow-2xl hover:scale-110 hover:bg-black active:scale-95 transition-all border border-white/10 group"
             title="Backup Semua Data"
           >
-            <i className="fas fa-cloud-download-alt"></i>
+            <i className="fas fa-cloud-download-alt group-hover:scale-125 transition-transform duration-300"></i>
           </button>
           <button 
             onClick={() => restoreInputRef.current?.click()}
-            className="w-10 h-10 rounded-xl bg-[#111] text-[#FFD700] flex items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-all border border-[#FFD700]/20"
+            className="w-10 h-10 rounded-xl bg-[#0a0a0a] text-[#FFD700] flex items-center justify-center shadow-2xl hover:scale-110 hover:bg-black active:scale-95 transition-all border border-white/10 group"
             title="Restore Data dari Fail"
           >
-            <i className="fas fa-cloud-upload-alt"></i>
+            <i className="fas fa-cloud-upload-alt group-hover:scale-125 transition-transform duration-300"></i>
           </button>
         </div>
         
         <button 
           onClick={onToggleTheme}
-          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#FFD700] text-black flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all border border-black/10"
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#FFD700] text-black flex items-center justify-center shadow-[0_0_40px_rgba(255,215,0,0.5)] hover:scale-110 hover:rotate-180 active:scale-90 transition-all duration-700 border-2 border-white/30"
           title={`Tukar ke Mode ${isDarkMode ? 'Cahaya' : 'Gelap'}`}
         >
-          <i className={`fas ${isDarkMode ? 'fa-sun' : 'fa-moon'} text-xl`}></i>
+          <i className="fas fa-cog text-xl"></i>
         </button>
       </div>
 
@@ -83,21 +69,7 @@ const Header: React.FC<HeaderProps> = ({ logo, theme, onLogoChange, onToggleThem
           Peguam Syarie & Pesuruhjaya Sumpah
         </p>
         
-        <button 
-          onClick={() => fileInputRef.current?.click()}
-          className="mt-4 px-4 py-1.5 bg-[#FFD700] text-black text-[10px] font-black rounded-full hover:bg-[#FFA500] transition-all uppercase tracking-wider shadow-md"
-        >
-          <i className="fas fa-image mr-1"></i> Tukar Logo Firma
-        </button>
-        
-        {/* Hidden File Inputs */}
-        <input 
-          type="file" 
-          ref={fileInputRef} 
-          onChange={handleLogoUpload} 
-          accept="image/*" 
-          className="hidden" 
-        />
+        {/* Hidden File Input for Restore */}
         <input 
           type="file" 
           ref={restoreInputRef} 

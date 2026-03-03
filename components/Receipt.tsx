@@ -12,6 +12,10 @@ interface ReceiptProps {
     docNo: string;
     date: string;
     notes?: string;
+    customHeader?: string;
+    customFooter?: string;
+    paymentMethod?: string;
+    paymentRef?: string;
     items: { name: string; price: number }[];
     total: number;
     isStatement?: boolean;
@@ -39,11 +43,11 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
   // Labels and metadata logic for different document types
   const getDocLabels = () => {
     if (data.isStatement) return {
-      watermark: 'STATEMENT',
-      typeLabel: 'PENYATA AKAUN',
-      customerLabel: 'Penyata Akaun Fail Bagi:',
-      totalLabel: 'BAKI TERTUNGGAK KESELURUHAN',
-      footerNote: 'Sila jelaskan baki tertunggak dalam tempoh 14 hari dari tarikh penyata ini.'
+      watermark: 'PENYATA',
+      typeLabel: 'PENYATA AKAUN FAIL',
+      customerLabel: 'Penyata Akaun Bagi:',
+      totalLabel: 'BAKI AKAUN KESELURUHAN',
+      footerNote: 'Sila jelaskan baki tertunggak (jika ada) dalam tempoh 14 hari.'
     };
     
     switch (docType) {
@@ -79,36 +83,26 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
 
   // Floating Controls Component for reuse
   const ControlPanel = () => (
-    <div className="fixed top-8 right-8 z-[150] flex flex-col items-end gap-4 no-print animate-fadeIn">
-      <div className="bg-black/80 backdrop-blur-md text-legal-gold px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 mb-2 shadow-2xl">
-        <i className="fas fa-circle-info mr-2"></i> Pilih "Save as PDF" di menu cetakan
-      </div>
-      
+    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[150] flex flex-row items-center gap-4 no-print animate-slideUp">
       <button 
         onClick={() => window.print()} 
-        className="group bg-black text-legal-gold px-10 py-5 rounded-2xl font-black text-xs flex items-center gap-6 hover:bg-gray-900 transition-all shadow-2xl uppercase tracking-widest border border-white/20 active:scale-95 w-full justify-between"
+        className="group bg-black text-legal-gold px-8 py-4 rounded-2xl font-black text-[10px] flex items-center gap-4 hover:bg-gray-900 transition-all shadow-2xl uppercase tracking-widest border border-white/20 active:scale-95"
       >
-        <span className="flex items-center gap-4">
-          <i className="fas fa-print text-xl group-hover:scale-110 transition-transform"></i> 
-          <span>CETAK DOKUMEN</span>
-        </span>
-        <i className="fas fa-chevron-right opacity-30"></i>
+        <i className="fas fa-print text-lg group-hover:scale-110 transition-transform"></i> 
+        <span>CETAK</span>
       </button>
 
       <button 
         onClick={() => window.print()} 
-        className="group bg-legal-gold text-white px-10 py-5 rounded-2xl font-black text-xs flex items-center gap-6 hover:bg-legal-gold-hover transition-all shadow-2xl uppercase tracking-widest border border-black/10 active:scale-95 w-full justify-between"
+        className="group bg-legal-gold text-white px-8 py-4 rounded-2xl font-black text-[10px] flex items-center gap-4 hover:bg-legal-gold-hover transition-all shadow-2xl uppercase tracking-widest border border-black/10 active:scale-95"
       >
-        <span className="flex items-center gap-4">
-          <i className="fas fa-file-pdf text-xl group-hover:scale-110 transition-transform"></i> 
-          <span>SIMPAN SEBAGAI PDF</span>
-        </span>
-        <i className="fas fa-download opacity-30"></i>
+        <i className="fas fa-file-pdf text-lg group-hover:scale-110 transition-transform"></i> 
+        <span>SIMPAN PDF</span>
       </button>
 
       <button 
         onClick={onClose} 
-        className="bg-white text-black w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-3xl hover:bg-gray-100 shadow-2xl border border-black/10 active:scale-90 transition-all mt-4"
+        className="bg-white text-black w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-2xl hover:bg-gray-100 shadow-2xl border border-black/10 active:scale-90 transition-all"
       >
         &times;
       </button>
@@ -121,7 +115,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
         <div className="text-center mb-6">
           <img src={displayLogo} alt="Logo" className="h-14 mx-auto mb-2 grayscale" />
           <h1 className="font-bold text-lg leading-tight uppercase">HAIRI MUSTAFA ASSOCIATES</h1>
-          <p className="text-[10px] uppercase">Peguam Syarie & Pesuruhjaya Sumpah</p>
+          <p className="text-[10px] uppercase">{data.customHeader || 'Peguam Syarie & Pesuruhjaya Sumpah'}</p>
           <div className="border-t border-dashed border-black mt-2 pt-2">
             <h2 className="font-bold text-base underline uppercase">{labels.typeLabel}</h2>
           </div>
@@ -131,6 +125,9 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
           <p><span className="font-bold">TARIKH:</span> {data.date}</p>
           <p><span className="font-bold">NO REF:</span> {data.docNo}</p>
           <p className="border-t border-black/10 pt-1"><span className="font-bold">KLIEN:</span> {data.customer}</p>
+          {data.paymentMethod && data.docType === 'RECEIPT' && (
+            <p className="border-t border-black/10 pt-1"><span className="font-bold">BAYARAN:</span> {data.paymentMethod} {data.paymentRef ? `(${data.paymentRef})` : ''}</p>
+          )}
         </div>
 
         <div className="border-y border-dashed border-black py-2 mb-4">
@@ -168,55 +165,47 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
   }
 
   return (
-    <div id="receipt-print" className="text-black p-12 md:p-16 min-h-[210mm] border-[1px] border-black/10 shadow-2xl relative flex flex-col overflow-hidden animate-fadeIn font-legal bg-white print:shadow-none print:border-0 print:p-8 print:min-h-0" 
-         style={{ background: '#fcfcf9' }}>
+    <div id="receipt-print" className="text-black p-6 md:p-8 w-[148mm] min-h-[210mm] relative flex flex-col overflow-hidden animate-fadeIn bg-white print:shadow-none print:border-0 print:p-6 print:w-[148mm] print:h-[210mm] print:min-h-0" 
+         style={{ background: '#ffffff' }}>
       
       {/* High-End Paper Fiber Texture Overlay */}
-      <div className="absolute inset-0 opacity-[0.06] pointer-events-none mix-blend-multiply" 
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none mix-blend-multiply" 
            style={{ 
              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` 
            }}>
       </div>
-      
-      {/* Structural Subtle Grid Lines */}
-      <div className="absolute inset-0 opacity-[0.02] pointer-events-none"
-           style={{
-             backgroundImage: 'linear-gradient(to right, #000 1px, transparent 1px), linear-gradient(to bottom, #000 1px, transparent 1px)',
-             backgroundSize: '40px 40px'
-           }}>
-      </div>
 
       {/* Elegant Large Diagonal Watermark */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden select-none opacity-[0.015]">
-        <span className="text-black font-bold text-[160px] -rotate-[35deg] uppercase tracking-[0.6em]">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden select-none opacity-[0.01]">
+        <span className="text-black font-bold text-[80px] -rotate-[35deg] uppercase tracking-[0.8em] font-sans">
           {labels.watermark}
         </span>
       </div>
 
       {/* Header Section: Professional Letterhead Identity */}
-      <div className="relative z-10 flex flex-row items-start justify-between mb-12 pb-10 border-b-[3px] border-black">
-        <div className="flex flex-row items-center gap-12">
+      <div className="relative z-10 flex flex-row items-start justify-between mb-4 pb-3 border-b border-black">
+        <div className="flex flex-row items-center gap-4">
           <div className="shrink-0">
-             <img src={displayLogo} alt="Logo" className="h-36 w-auto object-contain" />
+             <img src={displayLogo} alt="Logo" className="h-16 w-auto object-contain" />
           </div>
           <div className="flex-1 flex flex-col justify-center">
-            <h1 className="text-[42px] font-bold m-0 leading-none uppercase text-black tracking-tight">
+            <h1 className="text-xl font-bold m-0 leading-none uppercase text-black tracking-tight font-legal">
               HAIRI MUSTAFA ASSOCIATES
             </h1>
-            <p className="text-[14px] font-black m-0 uppercase tracking-[0.5em] text-gray-500 mt-2 font-sans">
-              Peguam Syarie & Pesuruhjaya Sumpah
+            <p className="text-[9px] font-black m-0 uppercase tracking-[0.2em] text-gray-500 mt-0.5 font-sans">
+              {data.customHeader || 'Peguam Syarie & Pesuruhjaya Sumpah'}
             </p>
-            <div className="text-[10px] mt-6 text-gray-600 leading-relaxed font-sans font-medium uppercase tracking-[0.15em] max-w-sm">
+            <div className="text-[7px] mt-1.5 text-gray-600 leading-tight font-sans font-medium uppercase tracking-[0.05em] max-w-xs">
               Lot 02, Bangunan Arked Mara, 09100 Baling, Kedah Darul Aman<br/>
               Tel: +60 11 5653 1310 | Emel: hairimustafa.legal@gmail.com
             </div>
           </div>
         </div>
         
-        <div className="mt-2 shrink-0">
-            <div className="border-[3px] border-black px-14 py-6 bg-white text-black min-w-[220px] text-center shadow-[8px_8px_0px_rgba(0,0,0,1)]">
-                <span className="text-[11px] font-black tracking-[0.3em] uppercase block mb-1 opacity-50 font-sans">DOKUMEN RASMI</span>
-                <span className="text-3xl font-bold uppercase tracking-widest leading-none">
+        <div className="shrink-0">
+            <div className="border border-black px-4 py-2 bg-white text-black min-w-[120px] text-center shadow-[3px_3px_0px_rgba(255,215,0,1)]">
+                <span className="text-[7px] font-black tracking-[0.15em] uppercase block mb-0.5 border-b border-black/5 pb-0.5 font-sans opacity-50">DOKUMEN RASMI</span>
+                <span className="text-lg font-bold uppercase tracking-widest leading-none font-legal">
                   {labels.typeLabel}
                 </span>
             </div>
@@ -224,114 +213,139 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
       </div>
 
       {/* Information Grid: Reference and Client Details */}
-      <div className="relative z-10 grid grid-cols-2 gap-20 mb-16">
-        <div className="space-y-4">
-            <div className="p-10 border-[2px] border-gray-300 bg-white/50 shadow-sm min-h-[180px] relative">
-                <div className="absolute top-0 left-0 w-[6px] h-full bg-black"></div>
-                <p className="text-gray-400 uppercase text-[11px] font-black mb-6 tracking-[0.25em] italic font-sans opacity-80">
+      <div className="relative z-10 grid grid-cols-2 gap-6 mb-4">
+        <div className="space-y-1.5">
+            <div className="p-3 border border-gray-100 bg-white shadow-sm min-h-[80px] relative">
+                <div className="absolute top-0 left-0 w-[3px] h-full bg-legal-gold"></div>
+                <p className="text-gray-400 uppercase text-[8px] font-black mb-1.5 tracking-[0.15em] italic font-sans">
                   {labels.customerLabel}
                 </p>
-                <p className="font-bold text-4xl uppercase leading-tight text-black mb-3">
+                <p className="font-bold text-lg uppercase leading-tight text-black mb-0.5 font-legal">
                   {data.customer}
                 </p>
-                {data.customerPhone && <p className="text-[13px] font-black text-gray-500 tracking-[0.1em] uppercase font-sans">T: {data.customerPhone}</p>}
+                {data.customerPhone && <p className="text-[9px] font-black text-gray-500 tracking-[0.05em] uppercase font-sans">T: {data.customerPhone}</p>}
                 {data.customerAddress && (
-                   <p className="text-[12px] text-gray-500 uppercase leading-relaxed font-medium mt-6 max-w-xs italic font-sans">
+                   <p className="text-[8px] text-gray-500 uppercase leading-tight font-medium mt-1.5 max-w-[180px] italic font-sans">
                      {data.customerAddress}
                    </p>
                 )}
             </div>
         </div>
         
-        <div className="text-right flex flex-col items-end justify-start gap-12 pt-8">
+        <div className="text-right flex flex-col items-end justify-start gap-3 pt-1">
             <div className="flex flex-col items-end">
-                <p className="text-gray-400 uppercase text-[11px] font-black tracking-[0.25em] mb-3 opacity-80 font-sans">No. Rujukan / Ref No.</p>
-                <p className="text-4xl font-black tracking-[0.18em] font-mono text-black leading-none">{data.docNo}</p>
+                <p className="text-gray-400 uppercase text-[8px] font-black tracking-[0.15em] mb-0.5 font-sans">No. Rujukan / Ref No.</p>
+                <p className="text-lg font-black tracking-[0.05em] font-mono text-black leading-none">{data.docNo}</p>
             </div>
             <div className="flex flex-col items-end">
-                <p className="text-gray-400 uppercase text-[11px] font-black tracking-[0.25em] mb-3 opacity-80 font-sans">Tarikh Dokumen / Date</p>
-                <p className="font-black text-4xl text-black tabular-nums leading-none">{data.date}</p>
+                <p className="text-gray-400 uppercase text-[8px] font-black tracking-[0.15em] mb-0.5 font-sans">Tarikh Dokumen / Date</p>
+                <p className="font-black text-lg text-black tabular-nums leading-none font-sans">{data.date}</p>
             </div>
+            {data.paymentMethod && data.docType === 'RECEIPT' && (
+              <div className="flex flex-col items-end mt-1">
+                  <p className="text-gray-400 uppercase text-[8px] font-black tracking-[0.15em] mb-0.5 font-sans">Kaedah Bayaran</p>
+                  <p className="font-bold text-[10px] text-black uppercase font-sans">{data.paymentMethod} {data.paymentRef ? `(${data.paymentRef})` : ''}</p>
+              </div>
+            )}
         </div>
       </div>
 
       {/* Items Content Table */}
-      <div className="relative z-10 flex-grow mb-16">
+      <div className="relative z-10 flex-grow mb-3">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="border-y-[3px] border-black bg-black/[0.04]">
-              <th className="py-8 px-8 text-left text-[13px] font-black uppercase tracking-[0.25em] text-black font-sans">
-                Butiran Perkhidmatan & Transaksi / Description
+            <tr className="border-y border-black bg-black/[0.01]">
+              <th className="py-1.5 px-3 text-left text-[8px] font-black uppercase tracking-[0.1em] text-black font-sans">
+                Butiran Perkhidmatan & Transaksi
               </th>
-              <th className="py-8 px-8 text-right text-[13px] font-black uppercase tracking-[0.25em] w-72 text-black font-sans">
+              <th className="py-1.5 px-3 text-right text-[8px] font-black uppercase tracking-[0.1em] w-28 text-black font-sans">
                 Amaun (RM)
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-black/10 border-b-[3px] border-black">
+          <tbody className="divide-y divide-black/5 border-b border-black">
             {data.items.map((item, idx) => (
-              <tr key={idx} className="bg-white/40 hover:bg-white/70 transition-colors">
-                <td className="py-10 px-8">
-                    <p className="font-bold text-[20px] uppercase tracking-tight text-black leading-tight">
+              <tr key={idx} className="bg-white">
+                <td className="py-2 px-3">
+                    <p className="font-bold text-[11px] uppercase tracking-tight text-black leading-tight font-sans">
                       {item.name}
                     </p>
                 </td>
-                <td className={`py-10 px-8 text-right font-black tabular-nums text-3xl ${item.price < 0 ? 'text-green-700' : 'text-black'}`}>
+                <td className={`py-2 px-3 text-right font-black tabular-nums text-base font-sans ${item.price < 0 ? 'text-green-700' : 'text-black'}`}>
                   {item.price.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
                 </td>
               </tr>
-            ))}
-            {/* Proportional Table Padding */}
-            {Array.from({ length: Math.max(0, 3 - data.items.length) }).map((_, i) => (
-              <tr key={i} className="h-24"><td></td><td></td></tr>
             ))}
           </tbody>
         </table>
       </div>
 
       {/* Summary Section with Grand Total */}
-      <div className="relative z-10 flex flex-col md:flex-row justify-between items-end gap-16 mt-auto">
-        <div className="flex-1 w-full">
-          {data.notes && (
-            <div className="mb-12 p-10 border border-black/10 rounded-sm bg-white/80 italic text-[14px] text-gray-700 leading-relaxed shadow-sm relative">
-                <div className="absolute top-0 left-0 w-1 h-full bg-gray-100"></div>
-                <p className="text-[12px] font-black uppercase tracking-[0.25em] text-gray-400 mb-4 not-italic font-sans">Nota / Remarks</p>
-                {data.notes}
+      <div className="relative z-10 flex flex-col gap-3 mt-auto">
+        <div className="flex flex-row justify-between items-end gap-4">
+          <div className="flex-1">
+            {data.notes && (
+              <div className="mb-3 p-2 border border-black/5 rounded-sm bg-white italic text-[9px] text-gray-700 leading-tight shadow-sm relative">
+                  <div className="absolute top-0 left-0 w-0.5 h-full bg-legal-gold/20"></div>
+                  <p className="text-[7px] font-black uppercase tracking-[0.1em] text-gray-400 mb-0.5 not-italic font-sans">Nota / Remarks</p>
+                  {data.notes}
+              </div>
+            )}
+            <div className="space-y-0.5 border-l border-legal-gold/20 pl-2">
+              <div className="text-[8px] font-black text-gray-600 uppercase tracking-[0.05em] font-sans">
+                * {labels.footerNote}
+              </div>
+              <div className="text-[7px] font-bold text-gray-300 uppercase tracking-[0.15em] italic font-sans select-none">
+                DOKUMEN PENJANAAN SISTEM DIGITAL - SAH TANPA TANDATANGAN
+              </div>
             </div>
-          )}
-          <div className="space-y-4 border-l-4 border-gray-100 pl-6">
-            <div className="text-[13px] font-black text-gray-600 uppercase tracking-[0.3em] font-sans">
-              * {labels.footerNote}
-            </div>
-            <div className="text-[12px] font-bold text-gray-300 uppercase tracking-[0.4em] italic font-sans select-none">
-              DOKUMEN PENJANAAN SISTEM DIGITAL - SAH TANPA TANDATANGAN
-            </div>
+          </div>
+
+          <div className="min-w-[180px] text-right p-3 bg-white border-2 border-black shadow-[4px_4px_0px_rgba(255,215,0,1)] relative">
+              <p className="text-[9px] font-black uppercase tracking-[0.15em] mb-1.5 text-gray-400 text-center font-sans">
+                {labels.totalLabel}
+              </p>
+              <div className="flex items-baseline justify-center gap-1.5">
+                <span className="text-base font-black opacity-20 font-sans">RM</span>
+                <span className="text-3xl font-black tabular-nums tracking-tighter leading-none text-black font-sans">
+                    {data.total.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
           </div>
         </div>
 
-        <div className="min-w-[500px] text-right p-16 bg-white border-[12px] border-black shadow-[16px_16px_0px_rgba(0,0,0,0.1)] relative">
-            <p className="text-[16px] font-black uppercase tracking-[0.5em] mb-6 text-gray-400 text-center font-sans">
-              {labels.totalLabel}
-            </p>
-            <div className="flex items-baseline justify-center gap-10">
-              <span className="text-6xl font-black opacity-20">RM</span>
-              <span className="text-[120px] font-black tabular-nums tracking-tighter leading-none text-black">
-                  {data.total.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
+        {/* Professional Firm Footer */}
+        <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+          <div>
+             <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-black font-legal">HAIRI MUSTAFA ASSOCIATES</p>
+             <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mt-0.5 font-sans">
+               {data.customFooter || 'Peguam Syarie & Pesuruhjaya Sumpah'}
+             </p>
+          </div>
+          <div className="text-right">
+             <p className="text-[7px] font-black uppercase tracking-[0.4em] text-gray-200 font-sans">SISTEM HMA v2.5</p>
+          </div>
         </div>
       </div>
 
-      {/* Professional Firm Footer */}
-      <div className="relative z-10 flex justify-between items-center pt-14 mt-20 border-t-[2px] border-gray-300">
-        <div>
-           <p className="text-[18px] font-bold uppercase tracking-[0.3em] text-black">HAIRI MUSTAFA ASSOCIATES</p>
-           <p className="text-[12px] font-bold text-gray-400 uppercase tracking-widest mt-2 font-sans">Peguam Syarie & Pesuruhjaya Sumpah</p>
-        </div>
-        <div className="text-right">
-           <p className="text-[12px] font-black uppercase tracking-[0.8em] text-gray-200 font-sans">SISTEM PENGURUSAN HMA v2.5</p>
-        </div>
-      </div>
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          @page {
+            size: A5 portrait;
+            margin: 0;
+          }
+          body {
+            background: white;
+          }
+          #receipt-print {
+            width: 148mm;
+            height: 210mm;
+            margin: 0 auto;
+            border: none !important;
+            box-shadow: none !important;
+          }
+        }
+      `}} />
 
       <ControlPanel />
     </div>

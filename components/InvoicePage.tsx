@@ -8,6 +8,9 @@ interface InvoicePageProps {
   clients: Client[];
   services: ServiceItem[];
   invCounter: number;
+  customHeader: string;
+  customFooter: string;
+  onUpdateSettings: (updates: Partial<{ customHeader: string; customFooter: string }>) => void;
   onProcessPayment: (receiptData: any) => void;
 }
 
@@ -17,7 +20,9 @@ interface InvoiceLineItem {
   quantity: number;
 }
 
-const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter, onProcessPayment }) => {
+const InvoicePage: React.FC<InvoicePageProps> = ({ 
+  clients, services, invCounter, customHeader, customFooter, onUpdateSettings, onProcessPayment 
+}) => {
   const [docType, setDocType] = useState<DocType>('RECEIPT');
   const [invNo, setInvNo] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -25,6 +30,10 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
   const [selectedCustomer, setSelectedCustomer] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
+  
+  // Payment Details
+  const [paymentMethod, setPaymentMethod] = useState('TUNAI');
+  const [paymentRef, setPaymentRef] = useState('');
   
   // Manual entry state
   const [manualDesc, setManualDesc] = useState('');
@@ -131,6 +140,10 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
       docNo: invNo,
       date: date,
       notes: notes,
+      customHeader,
+      customFooter,
+      paymentMethod,
+      paymentRef,
       items: currentItems.map(it => ({
         name: it.quantity > 1 ? `${it.name} (x${it.quantity})` : it.name,
         price: it.price * it.quantity
@@ -178,398 +191,348 @@ const InvoicePage: React.FC<InvoicePageProps> = ({ clients, services, invCounter
   const hmInputClass = "w-full border-2 border-[#333] bg-black p-4 rounded-xl font-bold text-white focus:border-[#FFD700] focus:ring-4 focus:ring-[#FFD700]/20 outline-none transition-all shadow-sm";
 
   return (
-    <div className="bg-[#0a0a0a] text-white p-6 md:p-10 rounded-[40px] shadow-2xl border border-[#222] animate-slideUp">
-      
-      {/* Document Type Selection */}
-      <div className="flex justify-center mb-10">
-        <div className="bg-[#111] p-2 rounded-2xl flex gap-2 shadow-inner border border-[#222] w-full max-w-xl">
+    <div className="animate-fadeIn space-y-10">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-white/5 pb-8">
+        <div>
+          <h2 className="text-3xl font-black uppercase tracking-tighter text-white">Penjanaan Dokumen Rasmi</h2>
+          <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.2em] mt-1 italic">Resit Rasmi • Invois • Sebutharga</p>
+        </div>
+        <div className="bg-[#0a0a0a] p-2 rounded-2xl flex gap-1 border border-white/10 shadow-2xl">
           {(['RECEIPT', 'INVOICE', 'QUOTATION'] as DocType[]).map((type) => (
             <button
               key={type}
               onClick={() => setDocType(type)}
-              className={`flex-1 py-4 px-4 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
+              className={`py-3 px-10 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
                 docType === type 
-                ? 'bg-black text-[#FFD700] shadow-xl scale-[1.02] ring-4 ring-[#FFD700]/20' 
-                : 'text-gray-700 hover:text-black hover:bg-gray-300'
+                ? 'bg-[#FFD700] text-black shadow-[0_0_25px_rgba(255,215,0,0.3)] scale-[1.05]' 
+                : 'text-gray-500 hover:text-white hover:bg-white/5'
               }`}
             >
-              {type === 'RECEIPT' ? 'RESIT' : type === 'INVOICE' ? 'INVOIS' : 'SEBUTHARGA'}
+              {type === 'RECEIPT' ? 'Resit' : type === 'INVOICE' ? 'Invois' : 'Sebutharga'}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Reference & Date */}
-      <div className="flex flex-col md:flex-row justify-between gap-6 mb-10 pb-8 border-b-2 border-dashed border-[#333]">
-        <div className="space-y-1">
-          <label className="block text-[10px] font-black uppercase text-gray-500 tracking-[0.2em] ml-1">No. Rujukan ({docType})</label>
-          <div className="text-3xl font-black tracking-widest tabular-nums bg-black px-6 py-4 rounded-2xl border-2 border-[#FFD700] inline-block text-[#FFD700] shadow-lg">
-            {invNo}
-          </div>
-        </div>
-        <div className="space-y-1 min-w-[240px]">
-          <label className="block text-[10px] font-black uppercase text-gray-500 tracking-[0.2em] ml-1">Tarikh Dokumen</label>
-          <input 
-            type="date" 
-            value={date} 
-            onChange={e => setDate(e.target.value)} 
-            className={`${hmInputClass} text-lg`}
-          />
-        </div>
-      </div>
-
-      {/* Customer Information */}
-      <div className="mb-10 bg-[#111] p-8 md:p-10 rounded-[35px] border-2 border-[#222] shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-2 h-full bg-[#FFD700]"></div>
-        <h3 className="font-legal text-xl font-bold mb-8 flex items-center gap-3 text-white">
-          <i className="fas fa-user-tie text-[#FFD700]"></i> Maklumat Pelanggan / Client Details
-        </h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          <div className="space-y-6">
-            <div className="flex flex-col gap-2">
-              <label className="block text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1">Carian Sistem (Guaman)</label>
-              <select 
-                onChange={handleCustomerSelect}
-                className="w-full border-2 border-[#333] bg-black p-4 rounded-xl font-bold text-white outline-none focus:border-[#FFD700] shadow-sm transition-all cursor-pointer"
-              >
-                <option value="MANUAL">-- MASUKKAN SECARA MANUAL --</option>
-                {clients.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                <option value="PELANGGAN TUNAI">PELANGGAN TUNAI (CASH)</option>
-              </select>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        {/* Left Column: Configuration */}
+        <div className="lg:col-span-4 space-y-8">
+          {/* Reference & Date Card */}
+          <div className="bg-[#0a0a0a] p-8 rounded-[32px] border border-white/5 shadow-2xl space-y-6">
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] ml-1">No. Rujukan Dokumen</label>
+              <div className="text-3xl font-black tracking-[0.1em] tabular-nums text-[#FFD700] bg-black p-6 rounded-2xl border-2 border-[#FFD700]/30 text-center shadow-[inset_0_0_20px_rgba(0,0,0,0.8)]">
+                {invNo}
+              </div>
             </div>
-            <div className="flex flex-col gap-2">
-              <label className={`block text-[10px] font-black uppercase tracking-widest ml-1 ${showValidation && !selectedCustomer ? 'text-rose-500' : 'text-gray-500'}`}>
-                Nama Penuh Pelanggan {showValidation && !selectedCustomer && <span className="font-black">(! WAJIB)</span>}
-              </label>
+            <div className="space-y-1.5">
+              <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Tarikh Dokumen</label>
               <input 
-                type="text" 
-                value={selectedCustomer}
-                onChange={e => setSelectedCustomer(e.target.value.toUpperCase())}
-                placeholder="NAMA PENUH"
-                className={`${hmInputClass} uppercase ${showValidation && !selectedCustomer ? 'border-rose-500 bg-rose-500/5' : ''}`}
+                type="date" 
+                value={date} 
+                onChange={e => setDate(e.target.value)} 
+                className="w-full bg-black border border-white/10 text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold"
               />
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="flex flex-col gap-2">
-              <label className="block text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">No. Telefon</label>
-              <input 
-                type="text" 
-                value={customerPhone}
-                onChange={e => setCustomerPhone(e.target.value)}
-                placeholder="012-3456789"
-                className={hmInputClass}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="block text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Alamat Surat-Menyurat</label>
-              <textarea 
-                value={customerAddress}
-                onChange={e => setCustomerAddress(e.target.value.toUpperCase())}
-                placeholder="ALAMAT LENGKAP"
-                className={`${hmInputClass} h-[100px] resize-none uppercase`}
-              ></textarea>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Item Entry Controls */}
-      <div className="grid grid-cols-1 lg:grid-cols-6 gap-8 mb-10">
-        <div className="lg:col-span-2 bg-[#111] p-8 rounded-[35px] border-2 border-[#222] shadow-sm relative group overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full translate-x-12 -translate-y-12"></div>
-          <h3 className="font-legal text-lg font-bold mb-6 flex items-center gap-3 relative z-10 text-white">
-            <i className="fas fa-list-check text-gray-500"></i> Pilih Dari Inventori
-          </h3>
-          <div className="relative z-10">
-            <select 
-              onChange={addItemFromInventory}
-              className="w-full border-2 border-[#FFD700]/50 bg-black p-5 rounded-2xl focus:ring-4 focus:ring-[#FFD700]/10 outline-none font-black text-sm cursor-pointer shadow-md text-[#FFD700]"
-            >
-              <option value="">+ KLIK UNTUK CARI SENARAI SERVIS</option>
-              {services.map(s => (
-                <option key={s.id} value={JSON.stringify(s)}>
-                  {s.name} — RM {s.price.toFixed(2)}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Pull from Ledger Section */}
-        <div className="lg:col-span-2 bg-black p-8 rounded-[35px] border-2 border-[#FFD700]/30 shadow-xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-[#FFD700] rotate-45 translate-x-12 -translate-y-12 opacity-10"></div>
-          <h3 className="font-legal text-lg font-bold mb-4 flex items-center gap-3 text-[#FFD700] relative z-10">
-            <i className="fas fa-file-import"></i> Tarik Data Ledger
-          </h3>
-          <div className="space-y-4 relative z-10">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-[9px] font-black uppercase text-gray-500 tracking-widest mb-1 block">Dari Tarikh</label>
+          {/* Document Settings Card */}
+          <div className="bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 shadow-2xl space-y-6">
+            <h3 className="text-[#FFD700] text-[10px] font-black uppercase tracking-[0.3em] border-b border-[#FFD700]/10 pb-4 italic">Tetapan Dokumen</h3>
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Custom Header (Atas)</label>
                 <input 
-                  type="date" 
-                  value={importStartDate}
-                  onChange={e => setImportStartDate(e.target.value)}
-                  className="w-full bg-[#111] border border-[#333] rounded-xl p-3 text-xs font-bold text-white outline-none focus:border-[#FFD700]"
+                  type="text" 
+                  value={customHeader}
+                  onChange={e => onUpdateSettings({ customHeader: e.target.value.toUpperCase() })}
+                  placeholder="CTH: PEGUAM SYARIE & PESURUHJAYA SUMPAH"
+                  className="w-full bg-black border border-white/10 text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold uppercase"
                 />
               </div>
-              <div>
-                <label className="text-[9px] font-black uppercase text-gray-500 tracking-widest mb-1 block">Hingga</label>
+              <div className="space-y-1.5">
+                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Custom Footer (Bawah)</label>
                 <input 
-                  type="date" 
-                  value={importEndDate}
-                  onChange={e => setImportEndDate(e.target.value)}
-                  className="w-full bg-[#111] border border-[#333] rounded-xl p-3 text-xs font-bold text-white outline-none focus:border-[#FFD700]"
+                  type="text" 
+                  value={customFooter}
+                  onChange={e => onUpdateSettings({ customFooter: e.target.value.toUpperCase() })}
+                  placeholder="CTH: TERIMA KASIH ATAS URUSAN ANDA"
+                  className="w-full bg-black border border-white/10 text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold uppercase"
                 />
               </div>
             </div>
-            <button 
-              onClick={pullLedgerData}
-              disabled={!clients.some(c => c.name === selectedCustomer)}
-              className="w-full bg-[#FFD700] text-black py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#FFA500] transition-all disabled:opacity-20 flex items-center justify-center gap-2"
-            >
-              <i className="fas fa-download"></i> Tarik Transaksi Ledger
-            </button>
           </div>
-        </div>
 
-        <div className="lg:col-span-2 bg-[#111] p-8 rounded-[35px] border-[3px] border-[#FFD700]/30 shadow-2xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFD700] rotate-45 translate-x-16 -translate-y-16 opacity-10"></div>
-          <h3 className="font-legal text-xl font-bold mb-6 flex items-center gap-3 relative z-10 text-white">
-            <i className="fas fa-keyboard text-[#FFD700]"></i> Tambah Perkhidmatan Manual
-          </h3>
-          
-          <div className="flex flex-col gap-5 relative z-10">
-            <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1">Keterangan / Description</label>
-              <input 
-                type="text" 
-                value={manualDesc}
-                onChange={e => setManualDesc(e.target.value)}
-                placeholder="CTH: CAJ PENGURUSAN DOKUMEN KHAS"
-                className="w-full border-2 border-[#333] bg-black p-4 rounded-xl font-black uppercase text-sm focus:border-[#FFD700] focus:bg-black outline-none transition-all shadow-inner text-white"
-              />
-            </div>
+          {/* Customer Selection Card */}
+          <div className="bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 shadow-2xl space-y-6">
+            <h3 className="text-[#FFD700] text-[10px] font-black uppercase tracking-[0.3em] border-b border-[#FFD700]/10 pb-4 italic">Maklumat Penerima</h3>
             
-            <div className="flex flex-col sm:flex-row gap-5">
-              <div className="w-full sm:w-28 space-y-1">
-                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1 block">Unit</label>
+            <div className="space-y-5">
+              <div className="space-y-1.5">
+                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Carian Klien Guaman</label>
+                <select 
+                  onChange={handleCustomerSelect}
+                  className="w-full bg-black border border-white/10 text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold cursor-pointer"
+                >
+                  <option value="MANUAL">-- MASUKKAN MANUAL --</option>
+                  {clients.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                  <option value="PELANGGAN TUNAI">PELANGGAN TUNAI (CASH)</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className={`block text-[9px] font-black uppercase tracking-widest ml-1 ${showValidation && !selectedCustomer ? 'text-rose-500' : 'text-gray-500'}`}>
+                  Nama Penuh {showValidation && !selectedCustomer && "(! WAJIB)"}
+                </label>
+                <input 
+                  type="text" 
+                  value={selectedCustomer}
+                  onChange={e => setSelectedCustomer(e.target.value.toUpperCase())}
+                  placeholder="NAMA PENUH"
+                  className={`w-full bg-black border text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold uppercase ${showValidation && !selectedCustomer ? 'border-rose-500 bg-rose-500/5' : 'border-white/10'}`}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">No. Telefon</label>
+                <input 
+                  type="text" 
+                  value={customerPhone}
+                  onChange={e => setCustomerPhone(e.target.value)}
+                  placeholder="012..."
+                  className="w-full bg-black border border-white/10 text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Alamat Penuh</label>
+                <textarea 
+                  value={customerAddress}
+                  onChange={e => setCustomerAddress(e.target.value.toUpperCase())}
+                  placeholder="ALAMAT LENGKAP..."
+                  className="w-full bg-black border border-white/10 text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold h-24 resize-none uppercase"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Details Card */}
+          <div className="bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 shadow-2xl space-y-6">
+            <h3 className="text-[#FFD700] text-[10px] font-black uppercase tracking-[0.3em] border-b border-[#FFD700]/10 pb-4 italic">Maklumat Pembayaran</h3>
+            
+            <div className="space-y-5">
+              <div className="space-y-1.5">
+                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Kaedah Pembayaran</label>
+                <select 
+                  value={paymentMethod}
+                  onChange={e => setPaymentMethod(e.target.value)}
+                  className="w-full bg-black border border-white/10 text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold cursor-pointer"
+                >
+                  <option value="TUNAI">TUNAI (CASH)</option>
+                  <option value="PINDAHAN BANK">PINDAHAN BANK (ONLINE TRANSFER)</option>
+                  <option value="CEK">CEK (CHEQUE)</option>
+                  <option value="KAD KREDIT/DEBIT">KAD KREDIT / DEBIT</option>
+                  <option value="LAIN-LAIN">LAIN-LAIN</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">No. Rujukan Transaksi / Cek</label>
+                <input 
+                  type="text" 
+                  value={paymentRef}
+                  onChange={e => setPaymentRef(e.target.value.toUpperCase())}
+                  placeholder="CTH: REF123456789"
+                  className="w-full bg-black border border-white/10 text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold uppercase"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Items & Actions */}
+        <div className="lg:col-span-8 space-y-8">
+          {/* Item Entry Area */}
+          <div className="bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 shadow-2xl">
+            <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
+              <h3 className="text-[#FFD700] text-[10px] font-black uppercase tracking-[0.3em] italic">Butiran Perkhidmatan</h3>
+              <div className="flex gap-4">
+                <select 
+                  onChange={addItemFromInventory}
+                  className="bg-black border border-[#FFD700]/30 text-[#FFD700] px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer hover:bg-[#FFD700]/10 transition-all"
+                >
+                  <option value="">+ Dari Inventori</option>
+                  {services.map(s => (
+                    <option key={s.id} value={JSON.stringify(s)}>{s.name} - RM{s.price.toFixed(2)}</option>
+                  ))}
+                </select>
+                <button 
+                  onClick={addEmptyRow}
+                  className="px-4 py-2 bg-white/5 text-gray-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+                >
+                  + Baris Kosong
+                </button>
+              </div>
+            </div>
+
+            {/* Manual Entry Row */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-8 bg-black/50 p-6 rounded-2xl border border-white/5">
+              <div className="md:col-span-6 space-y-1.5">
+                <label className="block text-[8px] font-black uppercase text-gray-600 tracking-widest ml-1">Keterangan Manual</label>
+                <input 
+                  type="text" 
+                  value={manualDesc}
+                  onChange={e => setManualDesc(e.target.value)}
+                  placeholder="CTH: CAJ PENGURUSAN..."
+                  className="w-full bg-black border border-white/10 text-white p-3 rounded-xl focus:outline-none focus:border-[#FFD700] text-xs font-bold uppercase"
+                />
+              </div>
+              <div className="md:col-span-2 space-y-1.5">
+                <label className="block text-[8px] font-black uppercase text-gray-600 tracking-widest ml-1">Unit</label>
                 <input 
                   type="number" 
                   value={manualQty}
                   onChange={e => setManualQty(e.target.value)}
-                  placeholder="1"
-                  className="w-full border-2 border-[#333] bg-black p-4 rounded-xl font-black text-center focus:border-[#FFD700] focus:bg-black outline-none shadow-inner text-white"
+                  className="w-full bg-black border border-white/10 text-white p-3 rounded-xl focus:outline-none focus:border-[#FFD700] text-xs font-bold text-center"
                 />
               </div>
-              
-              <div className="flex-grow space-y-1">
-                <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1">Harga Seunit (RM)</label>
+              <div className="md:col-span-3 space-y-1.5">
+                <label className="block text-[8px] font-black uppercase text-gray-600 tracking-widest ml-1">Harga (RM)</label>
                 <input 
                   type="number" 
                   step="0.01"
                   value={manualPrice}
                   onChange={e => setManualPrice(e.target.value)}
                   placeholder="0.00"
-                  className="w-full border-2 border-[#333] bg-black p-4 rounded-xl font-black focus:border-[#FFD700] focus:bg-black outline-none shadow-inner text-white"
+                  className="w-full bg-black border border-white/10 text-white p-3 rounded-xl focus:outline-none focus:border-[#FFD700] text-xs font-bold text-right"
                 />
               </div>
-              
-              <div className="flex items-end">
+              <div className="md:col-span-1 flex items-end">
                 <button 
                   onClick={handleManualAdd}
-                  className="w-full sm:w-auto bg-[#FFD700] text-black px-10 py-4 rounded-xl font-black text-sm hover:bg-[#FFA500] transition-all active:scale-95 shadow-lg flex items-center justify-center gap-3 h-[58px] border-b-4 border-black/20"
+                  className="w-full h-[42px] bg-[#FFD700] text-black rounded-xl flex items-center justify-center hover:bg-[#FFA500] transition-all shadow-lg active:scale-95"
                 >
-                  <i className="fas fa-plus-circle text-lg"></i> MASUKKAN
+                  <i className="fas fa-plus"></i>
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Item List */}
-      <div className="mb-10">
-        <div className="flex flex-col sm:flex-row justify-between items-center sm:items-end mb-4 px-2 gap-4">
-          <h3 className="font-legal text-2xl font-bold tracking-tight text-white">Senarai Transaksi / Transactions</h3>
-          <button 
-            onClick={addEmptyRow}
-            className="bg-[#111] text-gray-400 hover:bg-[#222] px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-widest transition-all border border-[#333] active:scale-95 flex items-center gap-2"
-          >
-            <i className="fas fa-plus"></i> Tambah Baris Kosong
-          </button>
-        </div>
-        
-        <div className="overflow-hidden border-2 border-[#FFD700]/30 rounded-[35px] shadow-2xl bg-[#0a0a0a]">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-black text-[#FFD700]">
-                <th className="p-6 text-[11px] font-black uppercase tracking-[0.2em]">Butiran / Description</th>
-                <th className="p-6 text-[11px] font-black uppercase tracking-[0.2em] text-center w-28">Unit</th>
-                <th className="p-6 text-[11px] font-black uppercase tracking-[0.2em] text-center w-40">Harga (RM)</th>
-                <th className="p-6 text-[11px] font-black uppercase tracking-[0.2em] text-right w-44">Subtotal</th>
-                <th className="p-6 w-20"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y-2 divide-[#111]">
-              {currentItems.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="p-24 text-center">
-                    <div className="flex flex-col items-center opacity-10">
-                      <i className="fas fa-receipt text-[100px] mb-6 text-[#FFD700]"></i>
-                      <p className="font-black uppercase tracking-[0.3em] text-lg text-white">Sila masukkan item perkhidmatan</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                currentItems.map((it, idx) => (
-                  <tr key={idx} className="hover:bg-white/5 transition-colors group">
-                    <td className="p-6">
-                      <input 
-                        type="text" 
-                        value={it.name}
-                        onChange={(e) => updateItem(idx, 'name', e.target.value)}
-                        placeholder="BUTIRAN..."
-                        className="w-full font-bold text-xl uppercase leading-tight bg-transparent border-b-2 border-transparent focus:border-[#FFD700] p-2 rounded outline-none transition-all text-white font-legal"
-                      />
-                    </td>
-                    <td className="p-6">
-                      <input 
-                        type="number" 
-                        min="1"
-                        value={it.quantity}
-                        onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
-                        className="w-full border-2 border-[#222] bg-black p-4 rounded-xl text-center font-black focus:border-[#FFD700] outline-none transition-all shadow-inner text-white text-lg"
-                      />
-                    </td>
-                    <td className="p-6">
-                      <input 
-                        type="number" 
-                        step="0.01"
-                        value={it.price || ''}
-                        onChange={(e) => updateItem(idx, 'price', e.target.value)}
-                        className="w-full border-2 border-[#222] bg-black p-4 rounded-xl text-center font-black focus:border-[#FFD700] outline-none transition-all shadow-inner text-white text-lg"
-                        placeholder="0.00"
-                      />
-                    </td>
-                    <td className="p-6 text-right">
-                      <span className="font-black text-3xl tracking-tighter tabular-nums text-white">
-                        {(it.price * it.quantity).toLocaleString('en-MY', { minimumFractionDigits: 2 })}
-                      </span>
-                    </td>
-                    <td className="p-6 text-center">
-                      <button 
-                        onClick={() => removeItem(idx)} 
-                        className="w-12 h-12 flex items-center justify-center text-gray-700 hover:text-rose-500 hover:bg-rose-500/10 rounded-2xl transition-all"
-                        title="Buang"
-                      >
-                        <i className="fas fa-trash-can text-lg"></i>
-                      </button>
-                    </td>
+            {/* Item List Table */}
+            <div className="overflow-hidden rounded-2xl border border-white/5">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-black text-gray-500 text-[9px] font-black uppercase tracking-widest">
+                    <th className="p-4">Butiran</th>
+                    <th className="p-4 text-center w-20">Unit</th>
+                    <th className="p-4 text-right w-32">Harga (RM)</th>
+                    <th className="p-4 text-right w-32">Subtotal</th>
+                    <th className="p-4 w-12"></th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Dedicated Notes & Footer Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 pt-12 border-t-2 border-[#222] items-start">
-        <div className="lg:col-span-1 space-y-8">
-          <div className="bg-[#111] p-8 rounded-[35px] border-2 border-[#222] shadow-sm relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-2 h-full bg-[#FFD700]"></div>
-            <label className="block text-[11px] font-black uppercase text-gray-500 mb-4 ml-1 tracking-widest flex items-center gap-2">
-              <i className="fas fa-pen-nib text-[#FFD700]"></i> Nota Tambahan / Remarks
-            </label>
-            <textarea 
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              placeholder="Arahan pembayaran, tarikh tamat, atau nota tambahan yang akan dipaparkan di dokumen..."
-              className="w-full border-2 border-[#333] bg-black p-6 rounded-[24px] focus:border-[#FFD700] outline-none transition-all font-bold text-sm h-40 resize-none shadow-inner text-white mb-4"
-            ></textarea>
-            
-            <div className="space-y-3">
-              <p className="text-[9px] font-black uppercase text-gray-500 tracking-[0.2em] ml-1 mb-2">Nota Pantas / Quick Notes:</p>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  "Sila bayar selewatnya 14 hari.",
-                  "Cek atas nama HAIRI MUSTAFA ASSOCIATES.",
-                  "Sebut harga sah selama 30 hari.",
-                  "Terima kasih atas urusan anda.",
-                  "Bayaran ansuran kedua diperlukan."
-                ].map((preset, i) => (
-                  <button 
-                    key={i}
-                    onClick={() => addQuickNote(preset)}
-                    className="bg-[#0a0a0a] hover:bg-[#FFD700] hover:text-black text-gray-500 text-[9px] font-black px-4 py-2 rounded-full transition-all border border-[#222] uppercase tracking-tighter"
-                  >
-                    + {preset.slice(0, 18)}...
-                  </button>
-                ))}
-              </div>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {currentItems.length === 0 ? (
+                    <tr><td colSpan={5} className="p-12 text-center text-gray-700 text-[10px] font-bold uppercase tracking-widest italic">Senarai item masih kosong.</td></tr>
+                  ) : (
+                    currentItems.map((it, idx) => (
+                      <tr key={idx} className="group hover:bg-white/[0.01] transition-colors">
+                        <td className="p-4">
+                          <input 
+                            type="text" 
+                            value={it.name}
+                            onChange={(e) => updateItem(idx, 'name', e.target.value)}
+                            className="w-full bg-transparent border-none focus:ring-0 text-white font-bold text-sm uppercase p-0"
+                          />
+                        </td>
+                        <td className="p-4">
+                          <input 
+                            type="number" 
+                            value={it.quantity}
+                            onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
+                            className="w-full bg-transparent border-none focus:ring-0 text-white font-bold text-sm text-center p-0"
+                          />
+                        </td>
+                        <td className="p-4">
+                          <input 
+                            type="number" 
+                            step="0.01"
+                            value={it.price || ''}
+                            onChange={(e) => updateItem(idx, 'price', e.target.value)}
+                            className="w-full bg-transparent border-none focus:ring-0 text-white font-bold text-sm text-right p-0"
+                          />
+                        </td>
+                        <td className="p-4 text-right font-black text-white tabular-nums">
+                          {(it.price * it.quantity).toLocaleString('en-MY', { minimumFractionDigits: 2 })}
+                        </td>
+                        <td className="p-4 text-center">
+                          <button onClick={() => removeItem(idx)} className="text-gray-700 hover:text-rose-500 transition-colors">
+                            <i className="fas fa-times"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
 
-        <div className="lg:col-span-2 space-y-12">
-          {/* Total Box */}
-          <div className="bg-black p-10 md:p-14 rounded-[50px] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 border-b-[15px] border-[#FFD700] relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-x-10 -translate-y-20 group-hover:scale-110 transition-transform duration-1000"></div>
-            <div className="flex items-center gap-10 relative z-10">
-              <div className="w-24 h-24 bg-[#111] backdrop-blur-md rounded-[35px] flex items-center justify-center text-[#FFD700] shadow-2xl ring-2 ring-[#FFD700]/20 border border-[#FFD700]/30">
-                <i className="fas fa-money-bill-transfer text-5xl"></i>
+          {/* Footer: Summary & Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Notes & Ledger Pull */}
+            <div className="space-y-6">
+              <div className="bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 shadow-2xl space-y-4">
+                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Nota Tambahan</label>
+                <textarea 
+                  value={notes}
+                  onChange={e => setNotes(e.target.value)}
+                  placeholder="Nota untuk dipaparkan di dokumen..."
+                  className="w-full bg-black border border-white/10 text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold h-32 resize-none"
+                ></textarea>
               </div>
+              
+              <div className="bg-[#0a0a0a] p-6 rounded-3xl border border-[#FFD700]/10 shadow-2xl flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <p className="text-[9px] font-black uppercase text-[#FFD700] tracking-widest mb-2 italic">Tarik Data Ledger</p>
+                  <div className="flex gap-2">
+                    <input type="date" value={importStartDate} onChange={e => setImportStartDate(e.target.value)} className="bg-black border border-white/5 text-[10px] p-2 rounded-lg text-white outline-none w-full" />
+                    <input type="date" value={importEndDate} onChange={e => setImportEndDate(e.target.value)} className="bg-black border border-white/5 text-[10px] p-2 rounded-lg text-white outline-none w-full" />
+                  </div>
+                </div>
+                <button onClick={pullLedgerData} disabled={!clients.some(c => c.name === selectedCustomer)} className="bg-[#FFD700] text-black w-12 h-12 rounded-2xl flex items-center justify-center hover:bg-[#FFA500] transition-all disabled:opacity-20 shadow-lg">
+                  <i className="fas fa-download"></i>
+                </button>
+              </div>
+            </div>
+
+            {/* Total & Finalize */}
+            <div className="bg-[#0a0a0a] p-10 rounded-[40px] border border-white/5 shadow-2xl flex flex-col justify-between items-center text-center relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-full h-2 bg-[#FFD700]"></div>
               <div>
-                <p className="text-[13px] font-black uppercase tracking-[0.5em] text-[#FFD700] mb-4 opacity-80">JUMLAH BESAR (TOTAL AMOUNT)</p>
-                <div className="flex items-baseline gap-4">
-                  <span className="text-4xl font-black text-[#FFD700]/50">RM</span>
-                  <h3 className="text-8xl md:text-9xl font-black tracking-tighter tabular-nums text-white leading-none font-legal">
-                    {total.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
-                  </h3>
+                <p className="text-[11px] font-black uppercase tracking-[0.4em] text-gray-500 mb-6">Jumlah Keseluruhan</p>
+                <div className="flex items-baseline justify-center gap-3">
+                  <span className="text-3xl font-black text-[#FFD700]/30">RM</span>
+                  <span className="text-7xl font-black tabular-nums tracking-tighter text-white">{total.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</span>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Action Buttons with explicit Save as PDF */}
-          <div className="flex flex-col gap-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <button 
-                onClick={() => processInvoice('standard', true)}
-                disabled={currentItems.length === 0}
-                className="flex-1 bg-[#FFD700] text-black py-8 rounded-[30px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-[#FFA500] active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-6 text-sm border-b-8 border-black/20"
-              >
-                <i className="fas fa-file-pdf text-4xl"></i> SIMPAN SEBAGAI PDF
-              </button>
-
-              <button 
-                onClick={() => processInvoice('thermal', true)}
-                disabled={currentItems.length === 0}
-                className="flex-1 bg-[#111] text-[#FFD700] py-8 rounded-[30px] font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-6 border-b-8 border-[#FFD700]/20 text-sm"
-              >
-                <i className="fas fa-bolt-lightning text-4xl"></i> CETAK THERMAL (80mm)
-              </button>
-            </div>
-
-            <div className="flex flex-col md:flex-row gap-4">
-               <button 
-                onClick={() => processInvoice('standard', true)}
-                disabled={currentItems.length === 0}
-                className="flex-1 bg-black text-[#FFD700] border-[4px] border-[#FFD700]/30 py-6 rounded-[24px] font-black uppercase tracking-[0.2em] shadow-lg hover:bg-[#0a0a0a] active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-4 text-xs"
-              >
-                <i className="fas fa-print text-xl"></i> CETAK STANDARD (A5)
-              </button>
-
-              <button 
-                onClick={() => processInvoice('standard', false)}
-                disabled={currentItems.length === 0}
-                className="flex-1 bg-[#1e293b] text-white py-6 rounded-[24px] font-black uppercase tracking-[0.2em] shadow-lg hover:bg-[#0f172a] active:scale-95 transition-all flex items-center justify-center gap-4 text-xs disabled:opacity-30 border-b-4 border-black/50"
-              >
-                <i className="fas fa-save text-xl text-[#FFD700]"></i> REKOD SISTEM SAHAJA
-              </button>
+              <div className="w-full space-y-4 mt-10">
+                <button 
+                  onClick={() => processInvoice('standard', true)}
+                  disabled={currentItems.length === 0}
+                  className="w-full bg-[#FFD700] text-black py-5 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-[#FFA500] transition-all shadow-xl active:scale-95 disabled:opacity-30"
+                >
+                  <i className="fas fa-file-pdf mr-3"></i> Jana Dokumen PDF
+                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button onClick={() => processInvoice('thermal', true)} disabled={currentItems.length === 0} className="bg-[#111] text-[#FFD700] py-4 rounded-xl font-black uppercase tracking-widest text-[9px] border border-[#FFD700]/20 hover:bg-black transition-all disabled:opacity-30">
+                    Thermal (80mm)
+                  </button>
+                  <button onClick={() => processInvoice('standard', false)} disabled={currentItems.length === 0} className="bg-[#111] text-gray-500 py-4 rounded-xl font-black uppercase tracking-widest text-[9px] border border-white/5 hover:bg-black transition-all disabled:opacity-30">
+                    Rekod Sahaja
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
