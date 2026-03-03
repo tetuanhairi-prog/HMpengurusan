@@ -110,6 +110,12 @@ export const loadFromStorage = (): AppState => {
         firmLogo: parsed.firmLogo || null,
         customHeader: parsed.customHeader || '',
         customFooter: parsed.customFooter || '',
+        layoutOptions: parsed.layoutOptions || {
+          showLogo: true,
+          showWatermark: true,
+          showBorder: true,
+          showPaymentDetails: true,
+        },
         currentPage: parsed.currentPage || 'guaman',
         activeClientIdx: validatedIdx,
         theme: parsed.theme || 'dark'
@@ -126,6 +132,12 @@ export const loadFromStorage = (): AppState => {
     firmLogo: null,
     customHeader: '',
     customFooter: '',
+    layoutOptions: {
+      showLogo: true,
+      showWatermark: true,
+      showBorder: true,
+      showPaymentDetails: true,
+    },
     currentPage: 'guaman',
     activeClientIdx: null,
     theme: 'dark'

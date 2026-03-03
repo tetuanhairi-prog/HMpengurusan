@@ -14,6 +14,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ logo, theme, onLogoChange, onToggleTheme, onBackup, onRestore }) => {
   const restoreInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const displayLogo = logo || DEFAULT_LOGO;
   const isDarkMode = theme === 'dark';
 
@@ -22,6 +23,20 @@ const Header: React.FC<HeaderProps> = ({ logo, theme, onLogoChange, onToggleThem
     if (file) {
       onRestore(file);
       // Reset input so the same file can be picked again if needed
+      e.target.value = '';
+    }
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          onLogoChange(event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
       e.target.value = '';
     }
   };
@@ -57,10 +72,17 @@ const Header: React.FC<HeaderProps> = ({ logo, theme, onLogoChange, onToggleThem
       </div>
 
       <div className="flex flex-col items-center gap-2">
-        <div className="bg-white p-2 rounded-lg shadow-inner mb-2">
+        <div 
+          className="bg-white p-2 rounded-lg shadow-inner mb-2 cursor-pointer hover:opacity-80 transition-opacity relative group"
+          onClick={() => logoInputRef.current?.click()}
+          title="Klik untuk tukar logo"
+        >
           {displayLogo && (
             <img src={displayLogo} alt="Firm Logo" className="h-20 w-auto object-contain" />
           )}
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+            <i className="fas fa-camera text-white text-xl"></i>
+          </div>
         </div>
         <h1 className="text-2xl md:text-3xl font-black text-[#FFD700] tracking-tighter leading-tight">
           HAIRI MUSTAFA ASSOCIATES
@@ -75,6 +97,14 @@ const Header: React.FC<HeaderProps> = ({ logo, theme, onLogoChange, onToggleThem
           ref={restoreInputRef} 
           onChange={handleRestoreClick} 
           accept=".json" 
+          className="hidden" 
+        />
+        {/* Hidden File Input for Logo */}
+        <input 
+          type="file" 
+          ref={logoInputRef} 
+          onChange={handleLogoUpload} 
+          accept="image/*" 
           className="hidden" 
         />
       </div>

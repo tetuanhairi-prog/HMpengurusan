@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { PageId, AppState, Client, PjsRecord, ServiceItem, LedgerEntry, ThemeMode } from './types';
 import { loadFromStorage, saveToStorage } from './services/storageService';
 import { syncToSheets } from './services/syncService';
+import { formatDate } from './utils/dateUtils';
 import Navbar from './components/Navbar';
 import Header from './components/Header';
 import GuamanPage from './components/GuamanPage';
@@ -129,12 +130,12 @@ const App: React.FC = () => {
       customerAddress: client.address,
       customerPhone: client.phone,
       docNo: `STMT-${Date.now().toString().slice(-6)}`,
-      date: new Date().toLocaleDateString('en-MY'),
+      date: formatDate(new Date().toISOString().split('T')[0]),
       notes: notes,
       customHeader: state.customHeader,
       customFooter: state.customFooter,
       items: filteredLedger.map(t => ({ 
-        name: `[${t.date}] - ${t.desc}`, 
+        name: `[${formatDate(t.date)}] - ${t.desc}`, 
         price: t.amt 
       })),
       total: filteredLedger.reduce((s, t) => s + t.amt, 0),
@@ -238,6 +239,8 @@ const App: React.FC = () => {
                 invCounter={invCounter}
                 customHeader={state.customHeader}
                 customFooter={state.customFooter}
+                companyAddress={state.companyAddress}
+                companyContact={state.companyContact}
                 onUpdateSettings={(updates) => updateState(updates)}
                 onProcessPayment={(receipt) => {
                   setReceiptData(receipt);
@@ -283,7 +286,7 @@ const App: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Tarikh</p>
-                  <p className="font-bold text-gray-300">{sharedPjsRecord.date}</p>
+                  <p className="font-bold text-gray-300">{formatDate(sharedPjsRecord.date)}</p>
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Amaun Bayaran</p>

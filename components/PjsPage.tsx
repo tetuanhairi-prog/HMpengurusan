@@ -2,6 +2,7 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { PjsRecord, ThemeMode } from '../types';
 import { exportToCSV, parseCSV } from '../utils/csvUtils';
+import { formatDate } from '../utils/dateUtils';
 
 interface PjsPageProps {
   records: PjsRecord[];
@@ -282,7 +283,7 @@ const PjsPage: React.FC<PjsPageProps> = ({ records, theme, onAdd, onDelete, onIm
             ) : (
               sortedRecords.map((rec) => (
                 <tr key={rec.id} className="group transition-colors hover:bg-white/5">
-                  <td className="p-4 text-xs font-bold tabular-nums text-gray-500">{rec.date}</td>
+                  <td className="p-4 text-xs font-bold tabular-nums text-gray-500">{formatDate(rec.date)}</td>
                   <td className="p-4 font-black uppercase tracking-tight text-white">{rec.name}</td>
                   <td className="p-4 text-xs italic text-gray-400">{rec.detail}</td>
                   <td className="p-4 text-right font-black tabular-nums text-lg text-[#FFD700]">

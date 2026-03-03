@@ -39,6 +39,8 @@ export interface AppState {
   firmLogo: string | null;
   customHeader: string;
   customFooter: string;
+  companyAddress?: string;
+  companyContact?: string;
   currentPage: PageId;
   activeClientIdx: number | null;
   theme: ThemeMode;

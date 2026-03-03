@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Client, ServiceItem } from '../types';
+import { formatDate } from '../utils/dateUtils';
 
 type DocType = 'RECEIPT' | 'INVOICE' | 'QUOTATION';
 
@@ -10,7 +11,9 @@ interface InvoicePageProps {
   invCounter: number;
   customHeader: string;
   customFooter: string;
-  onUpdateSettings: (updates: Partial<{ customHeader: string; customFooter: string }>) => void;
+  companyAddress?: string;
+  companyContact?: string;
+  onUpdateSettings: (updates: Partial<{ customHeader: string; customFooter: string; companyAddress: string; companyContact: string }>) => void;
   onProcessPayment: (receiptData: any) => void;
 }
 
@@ -21,7 +24,7 @@ interface InvoiceLineItem {
 }
 
 const InvoicePage: React.FC<InvoicePageProps> = ({ 
-  clients, services, invCounter, customHeader, customFooter, onUpdateSettings, onProcessPayment 
+  clients, services, invCounter, customHeader, customFooter, companyAddress, companyContact, onUpdateSettings, onProcessPayment 
 }) => {
   const [docType, setDocType] = useState<DocType>('RECEIPT');
   const [invNo, setInvNo] = useState('');
@@ -142,6 +145,8 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
       notes: notes,
       customHeader,
       customFooter,
+      companyAddress,
+      companyContact,
       paymentMethod,
       paymentRef,
       items: currentItems.map(it => ({
@@ -179,7 +184,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
     if (filtered.length === 0) return alert("Tiada transaksi ditemui dalam julat tarikh tersebut.");
     
     const newItems: InvoiceLineItem[] = filtered.map(t => ({
-      name: `[${t.date}] ${t.desc}`,
+      name: `[${formatDate(t.date)}] ${t.desc}`,
       price: t.amt,
       quantity: 1
     }));
@@ -239,116 +244,178 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
 
           {/* Document Settings Card */}
           <div className="bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 shadow-2xl space-y-6">
-            <h3 className="text-[#FFD700] text-[10px] font-black uppercase tracking-[0.3em] border-b border-[#FFD700]/10 pb-4 italic">Tetapan Dokumen</h3>
+            <h3 className="text-[#FFD700] text-[10px] font-black uppercase tracking-[0.3em] border-b border-[#FFD700]/10 pb-4 italic flex items-center gap-2">
+              <i className="fas fa-sliders-h"></i> Tetapan Dokumen
+            </h3>
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Custom Header (Atas)</label>
-                <input 
-                  type="text" 
-                  value={customHeader}
-                  onChange={e => onUpdateSettings({ customHeader: e.target.value.toUpperCase() })}
-                  placeholder="CTH: PEGUAM SYARIE & PESURUHJAYA SUMPAH"
-                  className="w-full bg-black border border-white/10 text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold uppercase"
-                />
+                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Nama Syarikat / Header (Atas)</label>
+                <div className="relative">
+                  <i className="fas fa-heading absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                  <input 
+                    type="text" 
+                    value={customHeader}
+                    onChange={e => onUpdateSettings({ customHeader: e.target.value.toUpperCase() })}
+                    placeholder="CTH: PEGUAM SYARIE & PESURUHJAYA SUMPAH"
+                    className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold uppercase"
+                  />
+                </div>
               </div>
+              
               <div className="space-y-1.5">
-                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Custom Footer (Bawah)</label>
-                <input 
-                  type="text" 
-                  value={customFooter}
-                  onChange={e => onUpdateSettings({ customFooter: e.target.value.toUpperCase() })}
-                  placeholder="CTH: TERIMA KASIH ATAS URUSAN ANDA"
-                  className="w-full bg-black border border-white/10 text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold uppercase"
-                />
+                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Alamat Syarikat</label>
+                <div className="relative">
+                  <i className="fas fa-building absolute left-4 top-4 text-gray-500"></i>
+                  <textarea 
+                    value={companyAddress || ''}
+                    onChange={e => onUpdateSettings({ companyAddress: e.target.value })}
+                    placeholder="CTH: Lot 02, Bangunan Arked Mara..."
+                    className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold h-20 resize-none"
+                  ></textarea>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">No. Telefon & Emel Syarikat</label>
+                <div className="relative">
+                  <i className="fas fa-address-book absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                  <input 
+                    type="text" 
+                    value={companyContact || ''}
+                    onChange={e => onUpdateSettings({ companyContact: e.target.value })}
+                    placeholder="CTH: Tel: +6011... | Emel: info@..."
+                    className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Nota Kaki / Footer (Bawah)</label>
+                <div className="relative">
+                  <i className="fas fa-shoe-prints absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                  <input 
+                    type="text" 
+                    value={customFooter}
+                    onChange={e => onUpdateSettings({ customFooter: e.target.value.toUpperCase() })}
+                    placeholder="CTH: TERIMA KASIH ATAS URUSAN ANDA"
+                    className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold uppercase"
+                  />
+                </div>
               </div>
             </div>
           </div>
 
           {/* Customer Selection Card */}
           <div className="bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 shadow-2xl space-y-6">
-            <h3 className="text-[#FFD700] text-[10px] font-black uppercase tracking-[0.3em] border-b border-[#FFD700]/10 pb-4 italic">Maklumat Penerima</h3>
+            <h3 className="text-[#FFD700] text-[10px] font-black uppercase tracking-[0.3em] border-b border-[#FFD700]/10 pb-4 italic flex items-center gap-2">
+              <i className="fas fa-user-circle"></i> Maklumat Penerima
+            </h3>
             
             <div className="space-y-5">
               <div className="space-y-1.5">
                 <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Carian Klien Guaman</label>
-                <select 
-                  onChange={handleCustomerSelect}
-                  className="w-full bg-black border border-white/10 text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold cursor-pointer"
-                >
-                  <option value="MANUAL">-- MASUKKAN MANUAL --</option>
-                  {clients.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                  <option value="PELANGGAN TUNAI">PELANGGAN TUNAI (CASH)</option>
-                </select>
+                <div className="relative">
+                  <i className="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                  <select 
+                    onChange={handleCustomerSelect}
+                    className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold cursor-pointer appearance-none"
+                  >
+                    <option value="MANUAL">-- MASUKKAN MANUAL --</option>
+                    {clients.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+                    <option value="PELANGGAN TUNAI">PELANGGAN TUNAI (CASH)</option>
+                  </select>
+                  <i className="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+                </div>
               </div>
 
               <div className="space-y-1.5">
                 <label className={`block text-[9px] font-black uppercase tracking-widest ml-1 ${showValidation && !selectedCustomer ? 'text-rose-500' : 'text-gray-500'}`}>
                   Nama Penuh {showValidation && !selectedCustomer && "(! WAJIB)"}
                 </label>
-                <input 
-                  type="text" 
-                  value={selectedCustomer}
-                  onChange={e => setSelectedCustomer(e.target.value.toUpperCase())}
-                  placeholder="NAMA PENUH"
-                  className={`w-full bg-black border text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold uppercase ${showValidation && !selectedCustomer ? 'border-rose-500 bg-rose-500/5' : 'border-white/10'}`}
-                />
+                <div className="relative">
+                  <i className={`fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 ${showValidation && !selectedCustomer ? 'text-rose-500' : 'text-gray-500'}`}></i>
+                  <input 
+                    type="text" 
+                    value={selectedCustomer}
+                    onChange={e => setSelectedCustomer(e.target.value.toUpperCase())}
+                    placeholder="NAMA PENUH"
+                    className={`w-full bg-black border text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold uppercase ${showValidation && !selectedCustomer ? 'border-rose-500 bg-rose-500/5' : 'border-white/10'}`}
+                  />
+                </div>
               </div>
 
               <div className="space-y-1.5">
                 <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">No. Telefon</label>
-                <input 
-                  type="text" 
-                  value={customerPhone}
-                  onChange={e => setCustomerPhone(e.target.value)}
-                  placeholder="012..."
-                  className="w-full bg-black border border-white/10 text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold"
-                />
+                <div className="relative">
+                  <i className="fas fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                  <input 
+                    type="text" 
+                    value={customerPhone}
+                    onChange={e => setCustomerPhone(e.target.value)}
+                    placeholder="012..."
+                    className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold"
+                  />
+                </div>
               </div>
 
               <div className="space-y-1.5">
                 <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Alamat Penuh</label>
-                <textarea 
-                  value={customerAddress}
-                  onChange={e => setCustomerAddress(e.target.value.toUpperCase())}
-                  placeholder="ALAMAT LENGKAP..."
-                  className="w-full bg-black border border-white/10 text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold h-24 resize-none uppercase"
-                ></textarea>
+                <div className="relative">
+                  <i className="fas fa-map-marker-alt absolute left-4 top-4 text-gray-500"></i>
+                  <textarea 
+                    value={customerAddress}
+                    onChange={e => setCustomerAddress(e.target.value.toUpperCase())}
+                    placeholder="ALAMAT LENGKAP..."
+                    className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold h-24 resize-none uppercase"
+                  ></textarea>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Payment Details Card */}
-          <div className="bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 shadow-2xl space-y-6">
-            <h3 className="text-[#FFD700] text-[10px] font-black uppercase tracking-[0.3em] border-b border-[#FFD700]/10 pb-4 italic">Maklumat Pembayaran</h3>
-            
-            <div className="space-y-5">
-              <div className="space-y-1.5">
-                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Kaedah Pembayaran</label>
-                <select 
-                  value={paymentMethod}
-                  onChange={e => setPaymentMethod(e.target.value)}
-                  className="w-full bg-black border border-white/10 text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold cursor-pointer"
-                >
-                  <option value="TUNAI">TUNAI (CASH)</option>
-                  <option value="PINDAHAN BANK">PINDAHAN BANK (ONLINE TRANSFER)</option>
-                  <option value="CEK">CEK (CHEQUE)</option>
-                  <option value="KAD KREDIT/DEBIT">KAD KREDIT / DEBIT</option>
-                  <option value="LAIN-LAIN">LAIN-LAIN</option>
-                </select>
-              </div>
+          {/* Payment Details Card - Only show for Receipt */}
+          {docType === 'RECEIPT' && (
+            <div className="bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 shadow-2xl space-y-6 animate-fadeIn">
+              <h3 className="text-[#FFD700] text-[10px] font-black uppercase tracking-[0.3em] border-b border-[#FFD700]/10 pb-4 italic flex items-center gap-2">
+                <i className="fas fa-wallet"></i> Maklumat Pembayaran
+              </h3>
+              
+              <div className="space-y-5">
+                <div className="space-y-1.5">
+                  <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Kaedah Pembayaran</label>
+                  <div className="relative">
+                    <i className="fas fa-money-bill-wave absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                    <select 
+                      value={paymentMethod}
+                      onChange={e => setPaymentMethod(e.target.value)}
+                      className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold cursor-pointer appearance-none"
+                    >
+                      <option value="TUNAI">TUNAI (CASH)</option>
+                      <option value="PINDAHAN BANK">PINDAHAN BANK (ONLINE TRANSFER)</option>
+                      <option value="CEK">CEK (CHEQUE)</option>
+                      <option value="KAD KREDIT/DEBIT">KAD KREDIT / DEBIT</option>
+                      <option value="LAIN-LAIN">LAIN-LAIN</option>
+                    </select>
+                    <i className="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+                  </div>
+                </div>
 
-              <div className="space-y-1.5">
-                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">No. Rujukan Transaksi / Cek</label>
-                <input 
-                  type="text" 
-                  value={paymentRef}
-                  onChange={e => setPaymentRef(e.target.value.toUpperCase())}
-                  placeholder="CTH: REF123456789"
-                  className="w-full bg-black border border-white/10 text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold uppercase"
-                />
+                <div className="space-y-1.5">
+                  <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">No. Rujukan Transaksi / Cek</label>
+                  <div className="relative">
+                    <i className="fas fa-hashtag absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                    <input 
+                      type="text" 
+                      value={paymentRef}
+                      onChange={e => setPaymentRef(e.target.value.toUpperCase())}
+                      placeholder="CTH: REF123456789"
+                      className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold uppercase"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Right Column: Items & Actions */}
@@ -377,19 +444,22 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
             </div>
 
             {/* Manual Entry Row */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-8 bg-black/50 p-6 rounded-2xl border border-white/5">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 mb-8 bg-[#111] p-4 rounded-2xl border border-[#FFD700]/20 shadow-inner items-end">
               <div className="md:col-span-6 space-y-1.5">
-                <label className="block text-[8px] font-black uppercase text-gray-600 tracking-widest ml-1">Keterangan Manual</label>
-                <input 
-                  type="text" 
-                  value={manualDesc}
-                  onChange={e => setManualDesc(e.target.value)}
-                  placeholder="CTH: CAJ PENGURUSAN..."
-                  className="w-full bg-black border border-white/10 text-white p-3 rounded-xl focus:outline-none focus:border-[#FFD700] text-xs font-bold uppercase"
-                />
+                <label className="block text-[8px] font-black uppercase text-[#FFD700] tracking-widest ml-1">Keterangan Manual</label>
+                <div className="relative">
+                  <i className="fas fa-pen absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+                  <input 
+                    type="text" 
+                    value={manualDesc}
+                    onChange={e => setManualDesc(e.target.value)}
+                    placeholder="CTH: CAJ PENGURUSAN..."
+                    className="w-full bg-black border border-white/10 text-white p-3 pl-9 rounded-xl focus:outline-none focus:border-[#FFD700] text-xs font-bold uppercase"
+                  />
+                </div>
               </div>
               <div className="md:col-span-2 space-y-1.5">
-                <label className="block text-[8px] font-black uppercase text-gray-600 tracking-widest ml-1">Unit</label>
+                <label className="block text-[8px] font-black uppercase text-[#FFD700] tracking-widest ml-1 text-center">Unit</label>
                 <input 
                   type="number" 
                   value={manualQty}
@@ -398,7 +468,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
                 />
               </div>
               <div className="md:col-span-3 space-y-1.5">
-                <label className="block text-[8px] font-black uppercase text-gray-600 tracking-widest ml-1">Harga (RM)</label>
+                <label className="block text-[8px] font-black uppercase text-[#FFD700] tracking-widest ml-1 text-right">Harga (RM)</label>
                 <input 
                   type="number" 
                   step="0.01"
@@ -411,9 +481,10 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
               <div className="md:col-span-1 flex items-end">
                 <button 
                   onClick={handleManualAdd}
-                  className="w-full h-[42px] bg-[#FFD700] text-black rounded-xl flex items-center justify-center hover:bg-[#FFA500] transition-all shadow-lg active:scale-95"
+                  className="w-full h-[42px] bg-[#FFD700] text-black rounded-xl flex items-center justify-center hover:bg-[#FFA500] transition-all shadow-[0_0_15px_rgba(255,215,0,0.3)] active:scale-95 group"
+                  title="Tambah Item"
                 >
-                  <i className="fas fa-plus"></i>
+                  <i className="fas fa-plus group-hover:rotate-90 transition-transform duration-300"></i>
                 </button>
               </div>
             </div>

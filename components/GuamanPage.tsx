@@ -2,6 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { Client, ThemeMode, LedgerEntry } from '../types';
 import { exportToCSV, parseCSV } from '../utils/csvUtils';
+import { formatDate } from '../utils/dateUtils';
 
 interface GuamanPageProps {
   clients: Client[];
@@ -159,7 +160,7 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
                   ) : (
                     client.ledger.map((t, i) => (
                       <tr key={i} className="group hover:bg-white/[0.02] transition-colors">
-                        <td className="p-6 text-gray-500 font-bold tabular-nums text-xs whitespace-nowrap">{t.date}</td>
+                        <td className="p-6 text-gray-500 font-bold tabular-nums text-xs whitespace-nowrap">{formatDate(t.date)}</td>
                         <td className="p-6 text-white font-black uppercase tracking-tight leading-tight text-sm">{t.desc}</td>
                         <td className={`p-6 text-right font-black text-xl tabular-nums tracking-tighter ${t.amt < 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                           {t.amt.toLocaleString('en-MY', { minimumFractionDigits: 2 })}

@@ -1,6 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { DEFAULT_LOGO } from '../constants';
+import { formatDate } from '../utils/dateUtils';
 
 interface ReceiptProps {
   data: {
@@ -14,6 +15,8 @@ interface ReceiptProps {
     notes?: string;
     customHeader?: string;
     customFooter?: string;
+    companyAddress?: string;
+    companyContact?: string;
     paymentMethod?: string;
     paymentRef?: string;
     items: { name: string; price: number }[];
@@ -122,7 +125,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
         </div>
 
         <div className="mb-4 space-y-1">
-          <p><span className="font-bold">TARIKH:</span> {data.date}</p>
+          <p><span className="font-bold">TARIKH:</span> {formatDate(data.date)}</p>
           <p><span className="font-bold">NO REF:</span> {data.docNo}</p>
           <p className="border-t border-black/10 pt-1"><span className="font-bold">KLIEN:</span> {data.customer}</p>
           {data.paymentMethod && data.docType === 'RECEIPT' && (
@@ -195,9 +198,10 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
             <p className="text-[9px] font-black m-0 uppercase tracking-[0.2em] text-gray-500 mt-0.5 font-sans">
               {data.customHeader || 'Peguam Syarie & Pesuruhjaya Sumpah'}
             </p>
-            <div className="text-[7px] mt-1.5 text-gray-600 leading-tight font-sans font-medium uppercase tracking-[0.05em] max-w-xs">
-              Lot 02, Bangunan Arked Mara, 09100 Baling, Kedah Darul Aman<br/>
-              Tel: +60 11 5653 1310 | Emel: hairimustafa.legal@gmail.com
+            <div className="text-[7px] mt-1.5 text-gray-600 leading-tight font-sans font-medium uppercase tracking-[0.05em] max-w-xs whitespace-pre-line">
+              {data.companyAddress || 'Lot 02, Bangunan Arked Mara, 09100 Baling, Kedah Darul Aman'}
+              <br/>
+              {data.companyContact || 'Tel: +60 11 5653 1310 | Emel: hairimustafa.legal@gmail.com'}
             </div>
           </div>
         </div>
@@ -239,7 +243,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
             </div>
             <div className="flex flex-col items-end">
                 <p className="text-gray-400 uppercase text-[8px] font-black tracking-[0.15em] mb-0.5 font-sans">Tarikh Dokumen / Date</p>
-                <p className="font-black text-lg text-black tabular-nums leading-none font-sans">{data.date}</p>
+                <p className="font-black text-lg text-black tabular-nums leading-none font-sans">{formatDate(data.date)}</p>
             </div>
             {data.paymentMethod && data.docType === 'RECEIPT' && (
               <div className="flex flex-col items-end mt-1">
