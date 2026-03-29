@@ -9,6 +9,7 @@ interface GuamanPageProps {
   theme: ThemeMode;
   onAdd: (client: { name: string; detail: string; phone?: string; address?: string }, fee: number) => void;
   onDelete: (id: string) => void;
+  onBulkDelete: (ids: string[]) => void;
   onImport: (data: Client[]) => void;
   onAddLedger: (clientIdx: number, entry: LedgerEntry) => void;
   onDeleteLedger: (clientIdx: number, entryIdx: number) => void;
@@ -16,7 +17,7 @@ interface GuamanPageProps {
 }
 
 const GuamanPage: React.FC<GuamanPageProps> = ({ 
-  clients, theme, onAdd, onDelete, onImport, onAddLedger, onDeleteLedger, onPrintStatement 
+  clients, theme, onAdd, onDelete, onBulkDelete, onImport, onAddLedger, onDeleteLedger, onPrintStatement 
 }) => {
   const [name, setName] = useState('');
   const [detail, setDetail] = useState('');
@@ -24,6 +25,7 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
   const [address, setAddress] = useState('');
   const [fee, setFee] = useState('');
   const [selectedClientIdx, setSelectedClientIdx] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   
   // Ledger specific states
   const [ledgerNotes, setLedgerNotes] = useState('');
@@ -55,6 +57,26 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
       balance: c.ledger.reduce((s, e) => s + e.amt, 0).toFixed(2)
     }));
     exportToCSV("HMA_Guaman", headers, data);
+  };
+
+  const handleBulkExport = () => {
+    const headers = ["Name", "Detail", "Phone", "Address", "Balance"];
+    const selectedClients = clients.filter(c => selectedIds.includes(c.id));
+    const data = selectedClients.map(c => ({
+      name: c.name,
+      detail: c.detail,
+      phone: c.phone || "",
+      address: c.address || "",
+      balance: c.ledger.reduce((s, e) => s + e.amt, 0).toFixed(2)
+    }));
+    exportToCSV("HMA_Guaman_Pilihan", headers, data);
+  };
+
+  const handleBulkDelete = () => {
+    if (confirm(`Adakah anda pasti untuk memadam ${selectedIds.length} rekod fail yang dipilih?`)) {
+      onBulkDelete(selectedIds);
+      setSelectedIds([]);
+    }
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,21 +114,21 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setSelectedClientIdx(null)}
-              className="w-12 h-12 flex items-center justify-center bg-white/5 text-[#FFD700] rounded-2xl hover:bg-white/10 transition-all border border-white/5"
+              className="w-12 h-12 flex items-center justify-center bg-[#111] text-[#FFD700] rounded-full hover:bg-white hover:text-black transition-all border border-white/10 shadow-lg group"
             >
-              <i className="fas fa-chevron-left"></i>
+              <i className="fas fa-chevron-left group-hover:-translate-x-1 transition-transform"></i>
             </button>
             <div>
-              <h2 className="text-2xl font-black uppercase tracking-tighter text-white">{client.name}</h2>
-              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em]">{client.detail}</p>
+              <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-white drop-shadow-md">{client.name}</h2>
+              <p className="text-[#FFD700] text-[10px] font-black uppercase tracking-[0.3em]">{client.detail}</p>
             </div>
           </div>
           <div className="flex gap-2">
             <button 
               onClick={() => onPrintStatement(selectedClientIdx, ledgerNotes, ledgerStartDate, ledgerEndDate)}
-              className="px-6 py-3 bg-[#FFD700] text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#FFA500] transition-all shadow-xl flex items-center gap-2"
+              className="px-6 py-3 bg-[#FFD700] text-black rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_20px_rgba(255,215,0,0.3)] flex items-center gap-2 group"
             >
-              <i className="fas fa-print"></i> Cetak Penyata
+              <i className="fas fa-print group-hover:scale-110 transition-transform"></i> Cetak Penyata
             </button>
           </div>
         </div>
@@ -201,15 +223,15 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
     <div className="animate-fadeIn space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-white/5 pb-6">
         <div>
-          <h2 className="text-3xl font-black uppercase tracking-tighter text-white">Pengurusan Fail Guaman</h2>
-          <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.2em] mt-1">Sistem Pendaftaran & Rekod Kewangan Klien</p>
+          <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-white drop-shadow-lg">Pengurusan Fail Guaman</h2>
+          <p className="text-[#FFD700] text-[10px] font-black uppercase tracking-[0.3em] mt-2">Sistem Pendaftaran & Rekod Kewangan Klien</p>
         </div>
-        <div className="flex gap-2">
-          <button onClick={handleExport} className="px-5 py-2.5 bg-[#111] text-[#FFD700] border border-white/5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-white/5 transition-all">
-            <i className="fas fa-file-export mr-2"></i> Export Data
+        <div className="flex gap-3">
+          <button onClick={handleExport} className="px-5 py-2.5 bg-[#111] text-gray-400 border border-white/10 rounded-full font-black text-[10px] uppercase tracking-widest hover:text-[#FFD700] hover:border-[#FFD700]/30 transition-all shadow-lg flex items-center gap-2 group">
+            <i className="fas fa-file-export group-hover:-translate-y-1 transition-transform"></i> Export Data
           </button>
-          <button onClick={() => fileInputRef.current?.click()} className="px-5 py-2.5 bg-[#111] text-[#FFD700] border border-white/5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-white/5 transition-all">
-            <i className="fas fa-file-import mr-2"></i> Import CSV
+          <button onClick={() => fileInputRef.current?.click()} className="px-5 py-2.5 bg-[#111] text-gray-400 border border-white/10 rounded-full font-black text-[10px] uppercase tracking-widest hover:text-[#FFD700] hover:border-[#FFD700]/30 transition-all shadow-lg flex items-center gap-2 group">
+            <i className="fas fa-file-import group-hover:-translate-y-1 transition-transform"></i> Import CSV
           </button>
           <input type="file" ref={fileInputRef} onChange={handleImport} accept=".csv" className="hidden" />
         </div>
@@ -278,7 +300,7 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
               </div>
             </div>
 
-            <button type="submit" className="w-full mt-8 py-4 bg-[#FFD700] text-black font-black rounded-2xl hover:bg-[#FFA500] transition-all uppercase tracking-tighter shadow-xl active:scale-95">
+            <button type="submit" className="w-full mt-8 py-4 bg-[#FFD700] text-black font-black rounded-full hover:bg-white transition-all uppercase tracking-widest shadow-[0_0_20px_rgba(255,215,0,0.2)] active:scale-95 text-xs">
               Simpan Rekod Fail
             </button>
           </form>
@@ -286,10 +308,43 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
 
         {/* Client List - Minimalist Table Style */}
         <div className="lg:col-span-8">
+          {selectedIds.length > 0 && (
+            <div className="bg-[#FFD700]/10 border border-[#FFD700]/20 rounded-2xl p-4 mb-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-fadeIn">
+              <span className="text-[#FFD700] text-xs font-black uppercase tracking-widest">{selectedIds.length} Rekod Dipilih</span>
+              <div className="flex gap-3">
+                <button 
+                  onClick={handleBulkExport}
+                  className="px-4 py-2 bg-[#111] text-[#FFD700] border border-[#FFD700]/30 rounded-full font-black text-[9px] uppercase tracking-widest hover:bg-[#FFD700] hover:text-black transition-all"
+                >
+                  <i className="fas fa-file-export mr-2"></i> Export Pilihan
+                </button>
+                <button 
+                  onClick={handleBulkDelete}
+                  className="px-4 py-2 bg-rose-500/10 text-rose-500 border border-rose-500/30 rounded-full font-black text-[9px] uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all"
+                >
+                  <i className="fas fa-trash-can mr-2"></i> Padam Pilihan
+                </button>
+              </div>
+            </div>
+          )}
           <div className="bg-[#0a0a0a] rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-black border-b border-white/5">
+                  <th className="p-6 w-12 text-center">
+                    <input 
+                      type="checkbox" 
+                      className="accent-[#FFD700] w-4 h-4 cursor-pointer"
+                      checked={clients.length > 0 && selectedIds.length === clients.length}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedIds(clients.map(c => c.id));
+                        } else {
+                          setSelectedIds([]);
+                        }
+                      }}
+                    />
+                  </th>
                   <th className="p-6 text-[10px] uppercase font-black tracking-[0.2em] text-gray-500">Maklumat Klien & Kes</th>
                   <th className="p-6 text-[10px] uppercase font-black tracking-[0.2em] text-gray-500 text-right">Baki Akaun</th>
                   <th className="p-6 text-[10px] uppercase font-black tracking-[0.2em] text-gray-500 text-center">Tindakan</th>
@@ -297,12 +352,26 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
               </thead>
               <tbody className="divide-y divide-white/5">
                 {clients.length === 0 ? (
-                  <tr><td colSpan={3} className="p-20 text-center text-gray-600 font-bold italic uppercase tracking-widest text-xs">Tiada rekod fail aktif dijumpai.</td></tr>
+                  <tr><td colSpan={4} className="p-20 text-center text-gray-600 font-bold italic uppercase tracking-widest text-xs">Tiada rekod fail aktif dijumpai.</td></tr>
                 ) : (
                   clients.map((client, idx) => {
                     const balance = client.ledger.reduce((sum, entry) => sum + entry.amt, 0);
                     return (
                       <tr key={client.id} className="group hover:bg-white/[0.02] transition-colors">
+                        <td className="p-6 text-center">
+                          <input 
+                            type="checkbox" 
+                            className="accent-[#FFD700] w-4 h-4 cursor-pointer"
+                            checked={selectedIds.includes(client.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedIds([...selectedIds, client.id]);
+                              } else {
+                                setSelectedIds(selectedIds.filter(id => id !== client.id));
+                              }
+                            }}
+                          />
+                        </td>
                         <td className="p-6">
                           <div className="flex flex-col">
                             <span className="text-white font-black text-lg uppercase tracking-tight leading-none mb-1 group-hover:text-[#FFD700] transition-colors">{client.name}</span>
@@ -322,13 +391,13 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
                           <div className="flex justify-center gap-3">
                             <button 
                               onClick={() => setSelectedClientIdx(idx)} 
-                              className="px-6 py-2.5 bg-black border border-[#FFD700]/20 text-[#FFD700] rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#FFD700] hover:text-black transition-all shadow-lg"
+                              className="px-6 py-2.5 bg-[#111] border border-white/10 text-gray-300 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-[#FFD700] hover:text-black hover:border-[#FFD700] transition-all shadow-lg"
                             >
                               Buka Ledger
                             </button>
                             <button 
                               onClick={() => { if(confirm('Padam rekod fail ini?')){ onDelete(client.id); }}} 
-                              className="w-10 h-10 flex items-center justify-center bg-rose-600/10 text-rose-500 rounded-xl hover:bg-rose-600 hover:text-white transition-all border border-rose-600/20"
+                              className="w-10 h-10 flex items-center justify-center bg-[#111] text-gray-500 rounded-full hover:bg-rose-600 hover:text-white transition-all border border-white/10 shadow-lg"
                             >
                               <i className="fas fa-trash-can text-sm"></i>
                             </button>

@@ -13,7 +13,8 @@ interface InvoicePageProps {
   customFooter: string;
   companyAddress?: string;
   companyContact?: string;
-  onUpdateSettings: (updates: Partial<{ customHeader: string; customFooter: string; companyAddress: string; companyContact: string }>) => void;
+  defaultPrintMode: 'standard' | 'thermal';
+  onUpdateSettings: (updates: Partial<{ customHeader: string; customFooter: string; companyAddress: string; companyContact: string; defaultPrintMode: 'standard' | 'thermal' }>) => void;
   onProcessPayment: (receiptData: any) => void;
 }
 
@@ -24,31 +25,57 @@ interface InvoiceLineItem {
 }
 
 const InvoicePage: React.FC<InvoicePageProps> = ({ 
-  clients, services, invCounter, customHeader, customFooter, companyAddress, companyContact, onUpdateSettings, onProcessPayment 
+  clients, services, invCounter, customHeader, customFooter, companyAddress, companyContact, defaultPrintMode, onUpdateSettings, onProcessPayment 
 }) => {
-  const [docType, setDocType] = useState<DocType>('RECEIPT');
+  const initialDraft = React.useMemo(() => {
+    try {
+      const draft = localStorage.getItem('hma_invoice_draft');
+      if (draft) return JSON.parse(draft);
+    } catch (e) {
+      console.error("Failed to load invoice draft", e);
+    }
+    return null;
+  }, []);
+
+  const [docType, setDocType] = useState<DocType>(initialDraft?.docType || 'RECEIPT');
   const [invNo, setInvNo] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(initialDraft?.date || new Date().toISOString().split('T')[0]);
   
-  const [selectedCustomer, setSelectedCustomer] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [customerAddress, setCustomerAddress] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState(initialDraft?.selectedCustomer || '');
+  const [customerPhone, setCustomerPhone] = useState(initialDraft?.customerPhone || '');
+  const [customerAddress, setCustomerAddress] = useState(initialDraft?.customerAddress || '');
   
   // Payment Details
-  const [paymentMethod, setPaymentMethod] = useState('TUNAI');
-  const [paymentRef, setPaymentRef] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState(initialDraft?.paymentMethod || 'TUNAI');
+  const [paymentRef, setPaymentRef] = useState(initialDraft?.paymentRef || '');
   
   // Manual entry state
   const [manualDesc, setManualDesc] = useState('');
   const [manualQty, setManualQty] = useState('1');
   const [manualPrice, setManualPrice] = useState('');
 
-  const [notes, setNotes] = useState('');
-  const [currentItems, setCurrentItems] = useState<InvoiceLineItem[]>([]);
+  const [notes, setNotes] = useState(initialDraft?.notes || '');
+  const [currentItems, setCurrentItems] = useState<InvoiceLineItem[]>(initialDraft?.currentItems || []);
   const [showValidation, setShowValidation] = useState(false);
   
   const [importStartDate, setImportStartDate] = useState('');
   const [importEndDate, setImportEndDate] = useState('');
+
+  // Autosave effect
+  useEffect(() => {
+    const draft = {
+      docType,
+      date,
+      selectedCustomer,
+      customerPhone,
+      customerAddress,
+      paymentMethod,
+      paymentRef,
+      notes,
+      currentItems
+    };
+    localStorage.setItem('hma_invoice_draft', JSON.stringify(draft));
+  }, [docType, date, selectedCustomer, customerPhone, customerAddress, paymentMethod, paymentRef, notes, currentItems]);
   
   useEffect(() => {
     const year = new Date().getFullYear();
@@ -158,12 +185,16 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
       printMode: mode
     });
 
+    // Clear draft after processing
+    localStorage.removeItem('hma_invoice_draft');
+
     setCurrentItems([]);
     setNotes('');
     setShowValidation(false);
     setSelectedCustomer('');
     setCustomerPhone('');
     setCustomerAddress('');
+    setPaymentRef('');
   };
 
   const addQuickNote = (text: string) => {
@@ -225,12 +256,6 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
         <div className="lg:col-span-4 space-y-8">
           {/* Reference & Date Card */}
           <div className="bg-[#0a0a0a] p-8 rounded-[32px] border border-white/5 shadow-2xl space-y-6">
-            <div className="space-y-2">
-              <label className="block text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] ml-1">No. Rujukan Dokumen</label>
-              <div className="text-3xl font-black tracking-[0.1em] tabular-nums text-[#FFD700] bg-black p-6 rounded-2xl border-2 border-[#FFD700]/30 text-center shadow-[inset_0_0_20px_rgba(0,0,0,0.8)]">
-                {invNo}
-              </div>
-            </div>
             <div className="space-y-1.5">
               <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Tarikh Dokumen</label>
               <input 
@@ -248,6 +273,24 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
               <i className="fas fa-sliders-h"></i> Tetapan Dokumen
             </h3>
             <div className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Mod Cetakan Lalai</label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onUpdateSettings({ defaultPrintMode: 'standard' })}
+                    className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${defaultPrintMode === 'standard' ? 'bg-[#FFD700] text-black shadow-[0_0_15px_rgba(255,215,0,0.2)]' : 'bg-black text-gray-500 border border-white/10 hover:border-[#FFD700]/50'}`}
+                  >
+                    Standard (A5/PDF)
+                  </button>
+                  <button
+                    onClick={() => onUpdateSettings({ defaultPrintMode: 'thermal' })}
+                    className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${defaultPrintMode === 'thermal' ? 'bg-[#FFD700] text-black shadow-[0_0_15px_rgba(255,215,0,0.2)]' : 'bg-black text-gray-500 border border-white/10 hover:border-[#FFD700]/50'}`}
+                  >
+                    Thermal (80mm)
+                  </button>
+                </div>
+              </div>
+
               <div className="space-y-1.5">
                 <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Nama Syarikat / Header (Atas)</label>
                 <div className="relative">
@@ -267,7 +310,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
                 <div className="relative">
                   <i className="fas fa-building absolute left-4 top-4 text-gray-500"></i>
                   <textarea 
-                    value={companyAddress || ''}
+                    value={companyAddress}
                     onChange={e => onUpdateSettings({ companyAddress: e.target.value })}
                     placeholder="CTH: Lot 02, Bangunan Arked Mara..."
                     className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold h-20 resize-none"
@@ -281,7 +324,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
                   <i className="fas fa-address-book absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
                   <input 
                     type="text" 
-                    value={companyContact || ''}
+                    value={companyContact}
                     onChange={e => onUpdateSettings({ companyContact: e.target.value })}
                     placeholder="CTH: Tel: +6011... | Emel: info@..."
                     className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold"
@@ -424,21 +467,24 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
           <div className="bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 shadow-2xl">
             <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
               <h3 className="text-[#FFD700] text-[10px] font-black uppercase tracking-[0.3em] italic">Butiran Perkhidmatan</h3>
-              <div className="flex gap-4">
-                <select 
-                  onChange={addItemFromInventory}
-                  className="bg-black border border-[#FFD700]/30 text-[#FFD700] px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer hover:bg-[#FFD700]/10 transition-all"
-                >
-                  <option value="">+ Dari Inventori</option>
-                  {services.map(s => (
-                    <option key={s.id} value={JSON.stringify(s)}>{s.name} - RM{s.price.toFixed(2)}</option>
-                  ))}
-                </select>
+              <div className="flex gap-3">
+                <div className="relative group">
+                  <select 
+                    onChange={addItemFromInventory}
+                    className="bg-[#111] border border-white/10 text-[#FFD700] px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer hover:border-[#FFD700]/50 hover:bg-black transition-all duration-300 shadow-lg appearance-none pr-10"
+                  >
+                    <option value="">+ DARI INVENTORI</option>
+                    {services.map(s => (
+                      <option key={s.id} value={JSON.stringify(s)}>{s.name} - RM{s.price.toFixed(2)}</option>
+                    ))}
+                  </select>
+                  <i className="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-[#FFD700] pointer-events-none text-xs group-hover:translate-y-0 transition-transform"></i>
+                </div>
                 <button 
                   onClick={addEmptyRow}
-                  className="px-4 py-2 bg-white/5 text-gray-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+                  className="px-5 py-2.5 bg-[#111] text-gray-300 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:text-white hover:border-white/30 hover:bg-black transition-all duration-300 shadow-lg flex items-center gap-2 group"
                 >
-                  + Baris Kosong
+                  <i className="fas fa-plus group-hover:rotate-90 transition-transform duration-300"></i> BARIS KOSONG
                 </button>
               </div>
             </div>
@@ -481,10 +527,11 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
               <div className="md:col-span-1 flex items-end">
                 <button 
                   onClick={handleManualAdd}
-                  className="w-full h-[42px] bg-[#FFD700] text-black rounded-xl flex items-center justify-center hover:bg-[#FFA500] transition-all shadow-[0_0_15px_rgba(255,215,0,0.3)] active:scale-95 group"
+                  className="w-full h-[42px] bg-[#FFD700] text-black rounded-xl flex items-center justify-center hover:bg-white transition-all duration-300 shadow-[0_0_20px_rgba(255,215,0,0.2)] hover:shadow-[0_0_25px_rgba(255,255,255,0.4)] active:scale-95 group relative overflow-hidden"
                   title="Tambah Item"
                 >
-                  <i className="fas fa-plus group-hover:rotate-90 transition-transform duration-300"></i>
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
+                  <i className="fas fa-plus relative z-10 group-hover:rotate-180 transition-transform duration-500 text-lg"></i>
                 </button>
               </div>
             </div>
@@ -589,15 +636,15 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
 
               <div className="w-full space-y-4 mt-10">
                 <button 
-                  onClick={() => processInvoice('standard', true)}
+                  onClick={() => processInvoice(defaultPrintMode, true)}
                   disabled={currentItems.length === 0}
                   className="w-full bg-[#FFD700] text-black py-5 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-[#FFA500] transition-all shadow-xl active:scale-95 disabled:opacity-30"
                 >
-                  <i className="fas fa-file-pdf mr-3"></i> Jana Dokumen PDF
+                  <i className="fas fa-print mr-3"></i> Jana & Cetak ({defaultPrintMode === 'standard' ? 'A5/PDF' : 'Thermal'})
                 </button>
                 <div className="grid grid-cols-2 gap-3">
-                  <button onClick={() => processInvoice('thermal', true)} disabled={currentItems.length === 0} className="bg-[#111] text-[#FFD700] py-4 rounded-xl font-black uppercase tracking-widest text-[9px] border border-[#FFD700]/20 hover:bg-black transition-all disabled:opacity-30">
-                    Thermal (80mm)
+                  <button onClick={() => processInvoice(defaultPrintMode === 'standard' ? 'thermal' : 'standard', true)} disabled={currentItems.length === 0} className="bg-[#111] text-[#FFD700] py-4 rounded-xl font-black uppercase tracking-widest text-[9px] border border-[#FFD700]/20 hover:bg-black transition-all disabled:opacity-30">
+                    Cetak {defaultPrintMode === 'standard' ? 'Thermal' : 'A5/PDF'}
                   </button>
                   <button onClick={() => processInvoice('standard', false)} disabled={currentItems.length === 0} className="bg-[#111] text-gray-500 py-4 rounded-xl font-black uppercase tracking-widest text-[9px] border border-white/5 hover:bg-black transition-all disabled:opacity-30">
                     Rekod Sahaja

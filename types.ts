@@ -41,6 +41,7 @@ export interface AppState {
   customFooter: string;
   companyAddress?: string;
   companyContact?: string;
+  defaultPrintMode?: 'standard' | 'thermal';
   currentPage: PageId;
   activeClientIdx: number | null;
   theme: ThemeMode;

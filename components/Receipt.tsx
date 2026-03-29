@@ -1,5 +1,7 @@
 
-import React, { useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import { DEFAULT_LOGO } from '../constants';
 import { formatDate } from '../utils/dateUtils';
 
@@ -30,6 +32,15 @@ interface ReceiptProps {
 }
 
 const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
+  const [localCustomer, setLocalCustomer] = useState(data.customer);
+  const [localAddress, setLocalAddress] = useState(data.customerAddress || '');
+  const receiptRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setLocalCustomer(data.customer);
+    setLocalAddress(data.customerAddress || '');
+  }, [data.customer, data.customerAddress]);
+
   const displayLogo = logo || DEFAULT_LOGO;
   const docType = data.docType || (data.isStatement ? 'STATEMENT' : 'RECEIPT');
   const isThermal = data.printMode === 'thermal';
@@ -42,6 +53,55 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
       return () => clearTimeout(timer);
     }
   }, [data.autoPrint]);
+
+  const handleDownloadPDF = async () => {
+    if (!receiptRef.current) return;
+    
+    try {
+      // Hide control panel during capture
+      const controls = receiptRef.current.querySelector('.no-print');
+      if (controls) (controls as HTMLElement).style.display = 'none';
+
+      const canvas = await html2canvas(receiptRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      if (controls) (controls as HTMLElement).style.display = '';
+
+      const imgData = canvas.toDataURL('image/png');
+      
+      if (isThermal) {
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: [80, (canvas.height * 80) / canvas.width]
+        });
+        pdf.addImage(imgData, 'PNG', 0, 0, 80, (canvas.height * 80) / canvas.width);
+        pdf.save(`${data.docNo}.pdf`);
+      } else {
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a5'
+        });
+        pdf.addImage(imgData, 'PNG', 0, 0, 148, 210);
+        pdf.save(`${data.docNo}.pdf`);
+      }
+    } catch (error) {
+      console.error("PDF generation failed", error);
+      alert("Gagal menjana PDF. Sila cuba lagi.");
+    }
+  };
+
+  const handlePrint = () => {
+    if (window.self !== window.top) {
+      alert("Sistem mengesan anda berada dalam mod Pratonton (Preview). Sila klik butang 'SIMPAN PDF' untuk memuat turun, atau buka aplikasi di Tab Baru (ikon di penjuru kanan atas) untuk mencetak secara terus.");
+    }
+    window.print();
+  };
 
   // Labels and metadata logic for different document types
   const getDocLabels = () => {
@@ -86,39 +146,53 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
 
   // Floating Controls Component for reuse
   const ControlPanel = () => (
-    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[150] flex flex-row items-center gap-4 no-print animate-slideUp">
-      <button 
-        onClick={() => window.print()} 
-        className="group bg-black text-legal-gold px-8 py-4 rounded-2xl font-black text-[10px] flex items-center gap-4 hover:bg-gray-900 transition-all shadow-2xl uppercase tracking-widest border border-white/20 active:scale-95"
-      >
-        <i className="fas fa-print text-lg group-hover:scale-110 transition-transform"></i> 
-        <span>CETAK</span>
-      </button>
+    <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[150] flex flex-col items-end gap-3 no-print animate-slideUp">
+      <div className="flex flex-col gap-3 bg-black/60 p-2.5 rounded-full backdrop-blur-xl border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+        <button 
+          onClick={handlePrint} 
+          className="group bg-[#111] text-[#FFD700] w-12 h-12 md:w-14 md:h-14 rounded-full font-black flex items-center justify-center hover:bg-[#FFD700] hover:text-black transition-all duration-300 shadow-lg border border-white/10 hover:scale-110 active:scale-95 relative"
+          title="Cetak Dokumen"
+        >
+          <i className="fas fa-print text-lg md:text-xl"></i>
+          <span className="absolute right-full mr-4 bg-black text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-white/10">
+            Cetak Dokumen
+          </span>
+        </button>
 
-      <button 
-        onClick={() => window.print()} 
-        className="group bg-legal-gold text-white px-8 py-4 rounded-2xl font-black text-[10px] flex items-center gap-4 hover:bg-legal-gold-hover transition-all shadow-2xl uppercase tracking-widest border border-black/10 active:scale-95"
-      >
-        <i className="fas fa-file-pdf text-lg group-hover:scale-110 transition-transform"></i> 
-        <span>SIMPAN PDF</span>
-      </button>
+        <button 
+          onClick={handleDownloadPDF} 
+          className="group bg-[#111] text-white w-12 h-12 md:w-14 md:h-14 rounded-full font-black flex items-center justify-center hover:bg-white hover:text-black transition-all duration-300 shadow-lg border border-white/10 hover:scale-110 active:scale-95 relative"
+          title="Simpan PDF"
+        >
+          <i className="fas fa-file-pdf text-lg md:text-xl"></i>
+          <span className="absolute right-full mr-4 bg-black text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-white/10">
+            Simpan PDF
+          </span>
+        </button>
 
-      <button 
-        onClick={onClose} 
-        className="bg-white text-black w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-2xl hover:bg-gray-100 shadow-2xl border border-black/10 active:scale-90 transition-all"
-      >
-        &times;
-      </button>
+        <div className="w-8 h-px bg-white/20 mx-auto my-1"></div>
+
+        <button 
+          onClick={onClose} 
+          className="group bg-rose-500 text-white w-12 h-12 md:w-14 md:h-14 rounded-full font-black flex items-center justify-center hover:bg-rose-600 transition-all duration-300 shadow-lg border border-rose-400/50 hover:scale-110 active:scale-95 relative"
+          title="Tutup Pratonton"
+        >
+          <i className="fas fa-times text-lg md:text-xl"></i>
+          <span className="absolute right-full mr-4 bg-black text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-white/10">
+            Tutup Pratonton
+          </span>
+        </button>
+      </div>
     </div>
   );
 
   if (isThermal) {
     return (
-      <div id="receipt-print" className="bg-white text-black p-4 w-[80mm] mx-auto font-mono text-[12px] animate-fadeIn relative print:m-0 print:w-full">
+      <div ref={receiptRef} id="receipt-print" className="bg-white text-black p-4 w-[80mm] mx-auto font-mono text-[12px] animate-fadeIn relative print:m-0 print:w-full">
         <div className="text-center mb-6">
           <img src={displayLogo} alt="Logo" className="h-14 mx-auto mb-2 grayscale" />
-          <h1 className="font-bold text-lg leading-tight uppercase">HAIRI MUSTAFA ASSOCIATES</h1>
-          <p className="text-[10px] uppercase">{data.customHeader || 'Peguam Syarie & Pesuruhjaya Sumpah'}</p>
+          <h1 className="font-bold text-lg leading-tight uppercase">{data.customHeader || 'HAIRI MUSTAFA ASSOCIATES'}</h1>
+          <p className="text-[10px] uppercase">Peguam Syarie & Pesuruhjaya Sumpah</p>
           <div className="border-t border-dashed border-black mt-2 pt-2">
             <h2 className="font-bold text-base underline uppercase">{labels.typeLabel}</h2>
           </div>
@@ -126,8 +200,15 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
 
         <div className="mb-4 space-y-1">
           <p><span className="font-bold">TARIKH:</span> {formatDate(data.date)}</p>
-          <p><span className="font-bold">NO REF:</span> {data.docNo}</p>
-          <p className="border-t border-black/10 pt-1"><span className="font-bold">KLIEN:</span> {data.customer}</p>
+          <div className="border-t border-black/10 pt-1 flex items-start">
+            <span className="font-bold mr-1">KLIEN:</span>
+            <input 
+              type="text"
+              value={localCustomer}
+              onChange={e => setLocalCustomer(e.target.value.toUpperCase())}
+              className="bg-transparent border-none p-0 focus:outline-none w-full uppercase font-mono text-[12px] hover:bg-black/5 transition-colors print:hover:bg-transparent"
+            />
+          </div>
           {data.paymentMethod && data.docType === 'RECEIPT' && (
             <p className="border-t border-black/10 pt-1"><span className="font-bold">BAYARAN:</span> {data.paymentMethod} {data.paymentRef ? `(${data.paymentRef})` : ''}</p>
           )}
@@ -168,7 +249,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
   }
 
   return (
-    <div id="receipt-print" className="text-black p-6 md:p-8 w-[148mm] min-h-[210mm] relative flex flex-col overflow-hidden animate-fadeIn bg-white print:shadow-none print:border-0 print:p-6 print:w-[148mm] print:h-[210mm] print:min-h-0" 
+    <div ref={receiptRef} id="receipt-print" className="text-black p-6 md:p-8 w-[148mm] min-h-[210mm] relative flex flex-col overflow-hidden animate-fadeIn bg-white print:shadow-none print:border-0 print:p-6 print:w-[148mm] print:h-[210mm] print:min-h-0" 
          style={{ background: '#ffffff' }}>
       
       {/* High-End Paper Fiber Texture Overlay */}
@@ -193,10 +274,10 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
           </div>
           <div className="flex-1 flex flex-col justify-center">
             <h1 className="text-xl font-bold m-0 leading-none uppercase text-black tracking-tight font-legal">
-              HAIRI MUSTAFA ASSOCIATES
+              {data.customHeader || 'HAIRI MUSTAFA ASSOCIATES'}
             </h1>
             <p className="text-[9px] font-black m-0 uppercase tracking-[0.2em] text-gray-500 mt-0.5 font-sans">
-              {data.customHeader || 'Peguam Syarie & Pesuruhjaya Sumpah'}
+              Peguam Syarie & Pesuruhjaya Sumpah
             </p>
             <div className="text-[7px] mt-1.5 text-gray-600 leading-tight font-sans font-medium uppercase tracking-[0.05em] max-w-xs whitespace-pre-line">
               {data.companyAddress || 'Lot 02, Bangunan Arked Mara, 09100 Baling, Kedah Darul Aman'}
@@ -219,28 +300,33 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
       {/* Information Grid: Reference and Client Details */}
       <div className="relative z-10 grid grid-cols-2 gap-6 mb-4">
         <div className="space-y-1.5">
-            <div className="p-3 border border-gray-100 bg-white shadow-sm min-h-[80px] relative">
+            <div className="p-3 border border-gray-100 bg-white shadow-sm min-h-[80px] relative group">
                 <div className="absolute top-0 left-0 w-[3px] h-full bg-legal-gold"></div>
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity no-print text-gray-300 text-xs pointer-events-none">
+                  <i className="fas fa-edit"></i>
+                </div>
                 <p className="text-gray-400 uppercase text-[8px] font-black mb-1.5 tracking-[0.15em] italic font-sans">
                   {labels.customerLabel}
                 </p>
-                <p className="font-bold text-lg uppercase leading-tight text-black mb-0.5 font-legal">
-                  {data.customer}
-                </p>
+                <input
+                  type="text"
+                  value={localCustomer}
+                  onChange={e => setLocalCustomer(e.target.value.toUpperCase())}
+                  className="font-bold text-lg uppercase leading-tight text-black mb-0.5 font-legal bg-transparent border-none p-0 focus:outline-none w-full hover:bg-black/5 transition-colors print:hover:bg-transparent"
+                  placeholder="NAMA KLIEN"
+                />
                 {data.customerPhone && <p className="text-[9px] font-black text-gray-500 tracking-[0.05em] uppercase font-sans">T: {data.customerPhone}</p>}
-                {data.customerAddress && (
-                   <p className="text-[8px] text-gray-500 uppercase leading-tight font-medium mt-1.5 max-w-[180px] italic font-sans">
-                     {data.customerAddress}
-                   </p>
-                )}
+                <textarea
+                  value={localAddress}
+                  onChange={e => setLocalAddress(e.target.value.toUpperCase())}
+                  className="text-[8px] text-gray-500 uppercase leading-tight font-medium mt-1.5 max-w-[180px] w-full italic font-sans bg-transparent border-none p-0 focus:outline-none resize-none hover:bg-black/5 transition-colors print:hover:bg-transparent overflow-hidden"
+                  placeholder="ALAMAT KLIEN..."
+                  rows={3}
+                />
             </div>
         </div>
         
         <div className="text-right flex flex-col items-end justify-start gap-3 pt-1">
-            <div className="flex flex-col items-end">
-                <p className="text-gray-400 uppercase text-[8px] font-black tracking-[0.15em] mb-0.5 font-sans">No. Rujukan / Ref No.</p>
-                <p className="text-lg font-black tracking-[0.05em] font-mono text-black leading-none">{data.docNo}</p>
-            </div>
             <div className="flex flex-col items-end">
                 <p className="text-gray-400 uppercase text-[8px] font-black tracking-[0.15em] mb-0.5 font-sans">Tarikh Dokumen / Date</p>
                 <p className="font-black text-lg text-black tabular-nums leading-none font-sans">{formatDate(data.date)}</p>
@@ -321,7 +407,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
         {/* Professional Firm Footer */}
         <div className="flex justify-between items-center pt-3 border-t border-gray-100">
           <div>
-             <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-black font-legal">HAIRI MUSTAFA ASSOCIATES</p>
+             <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-black font-legal">{data.customHeader || 'HAIRI MUSTAFA ASSOCIATES'}</p>
              <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mt-0.5 font-sans">
                {data.customFooter || 'Peguam Syarie & Pesuruhjaya Sumpah'}
              </p>

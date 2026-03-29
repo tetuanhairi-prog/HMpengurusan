@@ -85,6 +85,19 @@ const App: React.FC = () => {
   };
 
   const deletePjsRecord = (id: string) => updateState({ pjsRecords: state.pjsRecords.filter(r => r.id !== id) });
+  
+  const deleteMultipleClients = (ids: string[]) => {
+    const newClients = state.clients.filter(c => !ids.includes(c.id));
+    updateState({ 
+      clients: newClients,
+      activeClientIdx: null 
+    });
+  };
+
+  const deleteMultiplePjsRecords = (ids: string[]) => {
+    updateState({ pjsRecords: state.pjsRecords.filter(r => !ids.includes(r.id)) });
+  };
+
   const deleteService = (id: string) => updateState({ inventory: state.inventory.filter(s => s.id !== id) });
 
   const addService = (service: Omit<ServiceItem, 'id'>) => {
@@ -190,7 +203,7 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen pb-10 transition-colors duration-500 bg-black text-white">
       <div className="max-w-6xl mx-auto px-4 py-8 no-print">
-        <div className="rounded-xl border shadow-2xl overflow-hidden transition-all bg-[#0a0a0a] border-[#222]">
+        <div className="rounded-3xl border shadow-2xl overflow-hidden transition-all bg-[#0a0a0a] border-white/5">
           <Header 
             logo={firmLogo} 
             theme={theme} 
@@ -208,6 +221,7 @@ const App: React.FC = () => {
                 theme={theme}
                 onAdd={addClient} 
                 onDelete={deleteClient}
+                onBulkDelete={deleteMultipleClients}
                 onImport={(data) => updateState({ clients: data, activeClientIdx: null })}
                 onAddLedger={updateLedger}
                 onDeleteLedger={deleteLedgerEntry}
@@ -220,13 +234,13 @@ const App: React.FC = () => {
                 theme={theme}
                 onAdd={addPjsRecord} 
                 onDelete={deletePjsRecord}
+                onBulkDelete={deleteMultiplePjsRecords}
                 onImport={(data) => updateState({ pjsRecords: data })}
               />
             )}
             {currentPage === 'inventory' && (
               <InventoryPage 
                 services={inventory} 
-                theme={theme}
                 onAdd={addService} 
                 onDelete={deleteService}
                 onImport={(data) => updateState({ inventory: data })}
@@ -241,6 +255,7 @@ const App: React.FC = () => {
                 customFooter={state.customFooter}
                 companyAddress={state.companyAddress}
                 companyContact={state.companyContact}
+                defaultPrintMode={state.defaultPrintMode || 'standard'}
                 onUpdateSettings={(updates) => updateState(updates)}
                 onProcessPayment={(receipt) => {
                   setReceiptData(receipt);
