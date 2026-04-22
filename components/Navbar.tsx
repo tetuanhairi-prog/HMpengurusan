@@ -10,8 +10,6 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ currentPage, onPageChange }) => {
   const links: { id: PageId; label: string; icon: string }[] = [
     { id: 'guaman', label: 'GUAMAN', icon: 'fa-gavel' },
-    { id: 'pjs', label: 'REKOD PJS', icon: 'fa-stamp' },
-    { id: 'inventory', label: 'SENARAI SERVIS', icon: 'fa-briefcase' },
     { id: 'invoice', label: 'JANA RESIT/INV', icon: 'fa-receipt' },
   ];
 

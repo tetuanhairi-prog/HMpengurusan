@@ -7,15 +7,12 @@ import { formatDate } from './utils/dateUtils';
 import Navbar from './components/Navbar';
 import Header from './components/Header';
 import GuamanPage from './components/GuamanPage';
-import PjsPage from './components/PjsPage';
-import InventoryPage from './components/InventoryPage';
 import InvoicePage from './components/InvoicePage';
 import Receipt from './components/Receipt';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>(() => loadFromStorage());
   const [receiptData, setReceiptData] = useState<any>(null);
-  const [sharedPjsRecord, setSharedPjsRecord] = useState<PjsRecord | null>(null);
   const receiptRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,25 +25,6 @@ const App: React.FC = () => {
       receiptRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [receiptData]);
-
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash;
-      if (hash.startsWith('#share-pjs=')) {
-        try {
-          const encodedData = hash.replace('#share-pjs=', '');
-          const decodedData = JSON.parse(atob(encodedData));
-          setSharedPjsRecord(decodedData);
-        } catch (e) {
-          console.error("Failed to decode shared record", e);
-        }
-      }
-    };
-
-    handleHashChange();
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
 
   const updateState = (updates: Partial<AppState>) => {
     setState(prev => ({ ...prev, ...updates }));
@@ -70,12 +48,6 @@ const App: React.FC = () => {
     syncToSheets({ type: "GUAMAN", name: newClient.name, detail: newClient.detail, balance: initialFee });
   };
 
-  const addPjsRecord = (record: Omit<PjsRecord, 'id'>) => {
-    const newRecord: PjsRecord = { ...record, id: crypto.randomUUID() };
-    updateState({ pjsRecords: [newRecord, ...state.pjsRecords] });
-    syncToSheets({ type: "PJS", ...newRecord });
-  };
-
   const deleteClient = (id: string) => {
     const newClients = state.clients.filter(c => c.id !== id);
     updateState({ 
@@ -84,25 +56,12 @@ const App: React.FC = () => {
     });
   };
 
-  const deletePjsRecord = (id: string) => updateState({ pjsRecords: state.pjsRecords.filter(r => r.id !== id) });
-  
   const deleteMultipleClients = (ids: string[]) => {
     const newClients = state.clients.filter(c => !ids.includes(c.id));
     updateState({ 
       clients: newClients,
       activeClientIdx: null 
     });
-  };
-
-  const deleteMultiplePjsRecords = (ids: string[]) => {
-    updateState({ pjsRecords: state.pjsRecords.filter(r => !ids.includes(r.id)) });
-  };
-
-  const deleteService = (id: string) => updateState({ inventory: state.inventory.filter(s => s.id !== id) });
-
-  const addService = (service: Omit<ServiceItem, 'id'>) => {
-    const newService: ServiceItem = { ...service, id: crypto.randomUUID() };
-    updateState({ inventory: [...state.inventory, newService] });
   };
 
   const updateLedger = (clientIdx: number, newEntry: LedgerEntry) => {
@@ -228,28 +187,9 @@ const App: React.FC = () => {
                 onPrintStatement={handlePrintStatement}
               />
             )}
-            {currentPage === 'pjs' && (
-              <PjsPage 
-                records={pjsRecords} 
-                theme={theme}
-                onAdd={addPjsRecord} 
-                onDelete={deletePjsRecord}
-                onBulkDelete={deleteMultiplePjsRecords}
-                onImport={(data) => updateState({ pjsRecords: data })}
-              />
-            )}
-            {currentPage === 'inventory' && (
-              <InventoryPage 
-                services={inventory} 
-                onAdd={addService} 
-                onDelete={deleteService}
-                onImport={(data) => updateState({ inventory: data })}
-              />
-            )}
             {currentPage === 'invoice' && (
               <InvoicePage 
                 clients={clients} 
-                services={inventory} 
                 invCounter={invCounter}
                 customHeader={state.customHeader}
                 customFooter={state.customFooter}
@@ -283,51 +223,6 @@ const App: React.FC = () => {
       {receiptData && (
         <div className="hidden print:block">
           <Receipt data={receiptData} logo={firmLogo} onClose={() => setReceiptData(null)} />
-        </div>
-      )}
-
-      {sharedPjsRecord && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 p-6 animate-fadeIn">
-          <div className="bg-[#0a0a0a] rounded-3xl overflow-hidden shadow-2xl max-w-md w-full animate-slideUp border-[8px] border-[#111]">
-            <div className="bg-black text-[#FFD700] p-6 text-center border-b border-[#FFD700]/20">
-              <i className="fas fa-stamp text-4xl mb-2"></i>
-              <h2 className="text-xl font-black uppercase tracking-tighter">Rekod PJS Dikongsi</h2>
-            </div>
-            <div className="p-8 space-y-6">
-              <div className="border-b border-[#222] pb-4">
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Nama Pelanggan</p>
-                <p className="text-xl font-black text-white uppercase leading-none">{sharedPjsRecord.name}</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Tarikh</p>
-                  <p className="font-bold text-gray-300">{formatDate(sharedPjsRecord.date)}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Amaun Bayaran</p>
-                  <p className="text-xl font-black text-[#FFD700]">RM {sharedPjsRecord.amount.toFixed(2)}</p>
-                </div>
-              </div>
-              <div className="bg-black p-4 rounded-xl border border-[#222] italic">
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 not-italic">Butiran Servis</p>
-                <p className="text-gray-300 uppercase font-bold text-sm">{sharedPjsRecord.detail}</p>
-              </div>
-              <div className="pt-4">
-                <button 
-                  onClick={() => {
-                    setSharedPjsRecord(null);
-                    window.location.hash = '';
-                  }}
-                  className="w-full bg-[#FFD700] text-black py-4 rounded-xl font-black uppercase tracking-tighter hover:bg-[#FFA500] transition-all shadow-lg"
-                >
-                  Tutup Paparan
-                </button>
-              </div>
-            </div>
-            <div className="bg-[#111] p-2 text-center text-[8px] font-black uppercase tracking-widest text-[#FFD700]/50">
-              Hairi Mustafa Associates - Sistem Pengurusan PJS
-            </div>
-          </div>
         </div>
       )}
     </div>

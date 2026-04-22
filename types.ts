@@ -28,7 +28,7 @@ export interface ServiceItem {
   price: number;
 }
 
-export type PageId = 'guaman' | 'pjs' | 'inventory' | 'invoice';
+export type PageId = 'guaman' | 'invoice';
 export type ThemeMode = 'light' | 'dark';
 
 export interface AppState {

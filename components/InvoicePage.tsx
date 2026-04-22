@@ -7,7 +7,6 @@ type DocType = 'RECEIPT' | 'INVOICE' | 'QUOTATION';
 
 interface InvoicePageProps {
   clients: Client[];
-  services: ServiceItem[];
   invCounter: number;
   customHeader: string;
   customFooter: string;
@@ -25,7 +24,7 @@ interface InvoiceLineItem {
 }
 
 const InvoicePage: React.FC<InvoicePageProps> = ({ 
-  clients, services, invCounter, customHeader, customFooter, companyAddress, companyContact, defaultPrintMode, onUpdateSettings, onProcessPayment 
+  clients, invCounter, customHeader, customFooter, companyAddress, companyContact, defaultPrintMode, onUpdateSettings, onProcessPayment 
 }) => {
   const initialDraft = React.useMemo(() => {
     try {
@@ -100,14 +99,6 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
     } else {
       setSelectedCustomer(val);
     }
-  };
-
-  const addItemFromInventory = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
-    if (!val) return;
-    const item = JSON.parse(val) as ServiceItem;
-    setCurrentItems([...currentItems, { name: item.name, price: item.price, quantity: 1 }]);
-    e.target.value = ""; 
   };
 
   const handleManualAdd = () => {
@@ -468,18 +459,6 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
             <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
               <h3 className="text-[#FFD700] text-[10px] font-black uppercase tracking-[0.3em] italic">Butiran Perkhidmatan</h3>
               <div className="flex gap-3">
-                <div className="relative group">
-                  <select 
-                    onChange={addItemFromInventory}
-                    className="bg-[#111] border border-white/10 text-[#FFD700] px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer hover:border-[#FFD700]/50 hover:bg-black transition-all duration-300 shadow-lg appearance-none pr-10"
-                  >
-                    <option value="">+ DARI INVENTORI</option>
-                    {services.map(s => (
-                      <option key={s.id} value={JSON.stringify(s)}>{s.name} - RM{s.price.toFixed(2)}</option>
-                    ))}
-                  </select>
-                  <i className="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-[#FFD700] pointer-events-none text-xs group-hover:translate-y-0 transition-transform"></i>
-                </div>
                 <button 
                   onClick={addEmptyRow}
                   className="px-5 py-2.5 bg-[#111] text-gray-300 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:text-white hover:border-white/30 hover:bg-black transition-all duration-300 shadow-lg flex items-center gap-2 group"
