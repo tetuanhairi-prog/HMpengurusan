@@ -7,7 +7,7 @@ import { formatDate } from '../utils/dateUtils';
 
 interface ReceiptProps {
   data: {
-    docType?: 'RECEIPT' | 'INVOICE' | 'QUOTATION' | 'STATEMENT';
+    docType?: 'RECEIPT' | 'INVOICE' | 'QUOTATION' | 'STATEMENT' | 'PAYMENT_VOUCHER';
     title: string;
     customer: string;
     customerPhone?: string;
@@ -59,8 +59,8 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
     
     try {
       // Hide control panel during capture
-      const controls = receiptRef.current.querySelector('.no-print');
-      if (controls) (controls as HTMLElement).style.display = 'none';
+      const hiddenElements = Array.from(receiptRef.current.querySelectorAll('.print\\:hidden')) as HTMLElement[];
+      hiddenElements.forEach(el => el.style.display = 'none');
 
       const canvas = await html2canvas(receiptRef.current, {
         scale: 2,
@@ -69,7 +69,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
         backgroundColor: '#ffffff'
       });
 
-      if (controls) (controls as HTMLElement).style.display = '';
+      hiddenElements.forEach(el => el.style.display = '');
 
       const imgData = canvas.toDataURL('image/png');
       
@@ -130,6 +130,14 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
           totalLabel: 'JUMLAH SEBUTHARGA',
           footerNote: 'Sebut harga ini sah untuk tempoh 30 hari dari tarikh yang tertera.'
         };
+      case 'PAYMENT_VOUCHER':
+        return {
+          watermark: 'VOUCHER',
+          typeLabel: 'BAUCAR BAYARAN',
+          customerLabel: 'Dibayar Kepada / Paid To:',
+          totalLabel: 'JUMLAH DIBAYAR / TOTAL PAID',
+          footerNote: 'Sila pastikan maklumat bayaran adalah tepat.'
+        };
       case 'RECEIPT':
       default:
         return {
@@ -146,7 +154,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
 
   // Floating Controls Component for reuse
   const ControlPanel = () => (
-    <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[150] flex flex-col items-end gap-3 no-print animate-slideUp">
+    <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[150] flex flex-col items-end gap-3 print:hidden animate-slideUp">
       <div className="flex flex-col gap-3 bg-black/60 p-2.5 rounded-full backdrop-blur-xl border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
         <button 
           onClick={handlePrint} 
@@ -209,7 +217,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
               className="bg-transparent border-none p-0 focus:outline-none w-full uppercase font-mono text-[12px] hover:bg-black/5 transition-colors print:hover:bg-transparent"
             />
           </div>
-          {data.paymentMethod && data.docType === 'RECEIPT' && (
+          {data.paymentMethod && (data.docType === 'RECEIPT' || data.docType === 'PAYMENT_VOUCHER') && (
             <p className="border-t border-black/10 pt-1"><span className="font-bold">BAYARAN:</span> {data.paymentMethod} {data.paymentRef ? `(${data.paymentRef})` : ''}</p>
           )}
         </div>
@@ -302,7 +310,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
         <div className="space-y-1.5">
             <div className="p-3 border border-gray-100 bg-white shadow-sm min-h-[80px] relative group">
                 <div className="absolute top-0 left-0 w-[3px] h-full bg-legal-gold"></div>
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity no-print text-gray-300 text-xs pointer-events-none">
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity print:hidden text-gray-300 text-xs pointer-events-none">
                   <i className="fas fa-edit"></i>
                 </div>
                 <p className="text-gray-400 uppercase text-[8px] font-black mb-1.5 tracking-[0.15em] italic font-sans">
@@ -331,7 +339,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
                 <p className="text-gray-400 uppercase text-[8px] font-black tracking-[0.15em] mb-0.5 font-sans">Tarikh Dokumen / Date</p>
                 <p className="font-black text-lg text-black tabular-nums leading-none font-sans">{formatDate(data.date)}</p>
             </div>
-            {data.paymentMethod && data.docType === 'RECEIPT' && (
+            {data.paymentMethod && (data.docType === 'RECEIPT' || data.docType === 'PAYMENT_VOUCHER') && (
               <div className="flex flex-col items-end mt-1">
                   <p className="text-gray-400 uppercase text-[8px] font-black tracking-[0.15em] mb-0.5 font-sans">Kaedah Bayaran</p>
                   <p className="font-bold text-[10px] text-black uppercase font-sans">{data.paymentMethod} {data.paymentRef ? `(${data.paymentRef})` : ''}</p>

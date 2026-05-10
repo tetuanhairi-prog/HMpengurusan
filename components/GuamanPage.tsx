@@ -166,8 +166,8 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
 
           {/* Right Column: Transaction List */}
           <div className="lg:col-span-8 flex flex-col gap-6">
-            <div className="bg-[#0a0a0a] rounded-3xl border border-white/5 overflow-hidden shadow-2xl flex-grow">
-              <table className="w-full text-left border-collapse">
+            <div className="bg-[#0a0a0a] rounded-3xl border border-white/5 overflow-x-auto shadow-2xl flex-grow">
+              <table className="w-full text-left border-collapse min-w-[500px]">
                 <thead>
                   <tr className="bg-black border-b border-white/5">
                     <th className="p-6 text-[9px] uppercase font-black tracking-[0.2em] text-gray-500">Tarikh</th>
@@ -327,8 +327,8 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
               </div>
             </div>
           )}
-          <div className="bg-[#0a0a0a] rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
-            <table className="w-full text-left border-collapse">
+          <div className="bg-[#0a0a0a] rounded-3xl border border-white/5 overflow-x-auto shadow-2xl">
+            <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
                 <tr className="bg-black border-b border-white/5">
                   <th className="p-6 w-12 text-center">

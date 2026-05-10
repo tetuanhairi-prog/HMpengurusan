@@ -201,6 +201,9 @@ const App: React.FC = () => {
                   setReceiptData(receipt);
                   updateState({ invCounter: invCounter + 1 });
                 }}
+                onPreviewOnly={(receipt) => {
+                  setReceiptData(receipt);
+                }}
               />
             )}
           </main>
@@ -208,13 +211,15 @@ const App: React.FC = () => {
       </div>
 
       {receiptData && (
-        <div ref={receiptRef} className="max-w-6xl mx-auto px-4 py-12 animate-fadeIn no-print border-t border-white/5 mt-10">
-           <div className="text-center mb-8">
+        <div ref={receiptRef} className="max-w-6xl mx-auto px-4 py-12 animate-fadeIn border-t border-white/5 mt-10 print:m-0 print:p-0 print:border-none">
+           <div className="text-center mb-8 no-print">
              <h3 className="text-[#FFD700] text-xs font-black uppercase tracking-[0.4em] italic mb-2">Pratinjau Dokumen Rasmi</h3>
              <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Sila semak butiran sebelum mencetak atau menyimpan</p>
            </div>
-           <div className="max-w-[148mm] mx-auto shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-white/10 rounded-3xl overflow-hidden bg-white">
-            <Receipt data={receiptData} logo={firmLogo} onClose={() => setReceiptData(null)} />
+           <div className="w-full overflow-x-auto pb-4 custom-scrollbar print:overflow-visible print:pb-0">
+             <div className="w-[148mm] md:mx-auto shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-white/10 rounded-3xl overflow-hidden bg-white mx-auto shrink-0 print:shadow-none print:border-none print:rounded-none">
+              <Receipt data={receiptData} logo={firmLogo} onClose={() => setReceiptData(null)} />
+             </div>
            </div>
         </div>
       )}

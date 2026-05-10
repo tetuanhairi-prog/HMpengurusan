@@ -47,21 +47,21 @@ const Header: React.FC<HeaderProps> = ({ logo, theme, onLogoChange, onToggleThem
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#FFD700]/5 blur-[120px] rounded-full pointer-events-none"></div>
       
       {/* System Controls Group */}
-      <div className="absolute top-6 right-6 flex flex-col sm:flex-row gap-3 z-20">
+      <div className="absolute top-4 right-4 flex flex-col sm:flex-row gap-2 z-20">
         <div className="flex gap-2">
           <button 
             onClick={onBackup}
-            className="w-10 h-10 rounded-full bg-[#111] border border-white/10 text-gray-400 hover:text-[#FFD700] hover:border-[#FFD700]/30 transition-all flex items-center justify-center shadow-lg group"
+            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-[#111] border border-white/10 text-gray-400 hover:text-[#FFD700] hover:border-[#FFD700]/30 transition-all flex items-center justify-center shadow-lg group"
             title="Backup Semua Data"
           >
-            <i className="fas fa-cloud-download-alt group-hover:scale-110 transition-transform duration-300"></i>
+            <i className="fas fa-cloud-download-alt text-xs md:text-sm group-hover:scale-110 transition-transform duration-300"></i>
           </button>
           <button 
             onClick={() => restoreInputRef.current?.click()}
-            className="w-10 h-10 rounded-full bg-[#111] border border-white/10 text-gray-400 hover:text-[#FFD700] hover:border-[#FFD700]/30 transition-all flex items-center justify-center shadow-lg group"
+            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-[#111] border border-white/10 text-gray-400 hover:text-[#FFD700] hover:border-[#FFD700]/30 transition-all flex items-center justify-center shadow-lg group"
             title="Restore Data dari Fail"
           >
-            <i className="fas fa-cloud-upload-alt group-hover:scale-110 transition-transform duration-300"></i>
+            <i className="fas fa-cloud-upload-alt text-xs md:text-sm group-hover:scale-110 transition-transform duration-300"></i>
           </button>
         </div>
       </div>

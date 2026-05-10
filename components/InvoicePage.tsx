@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Client, ServiceItem } from '../types';
 import { formatDate } from '../utils/dateUtils';
 
-type DocType = 'RECEIPT' | 'INVOICE' | 'QUOTATION';
+type DocType = 'RECEIPT' | 'INVOICE' | 'QUOTATION' | 'PAYMENT_VOUCHER';
 
 interface InvoicePageProps {
   clients: Client[];
@@ -15,6 +15,7 @@ interface InvoicePageProps {
   defaultPrintMode: 'standard' | 'thermal';
   onUpdateSettings: (updates: Partial<{ customHeader: string; customFooter: string; companyAddress: string; companyContact: string; defaultPrintMode: 'standard' | 'thermal' }>) => void;
   onProcessPayment: (receiptData: any) => void;
+  onPreviewOnly?: (receiptData: any) => void;
 }
 
 interface InvoiceLineItem {
@@ -24,7 +25,7 @@ interface InvoiceLineItem {
 }
 
 const InvoicePage: React.FC<InvoicePageProps> = ({ 
-  clients, invCounter, customHeader, customFooter, companyAddress, companyContact, defaultPrintMode, onUpdateSettings, onProcessPayment 
+  clients, invCounter, customHeader, customFooter, companyAddress, companyContact, defaultPrintMode, onUpdateSettings, onProcessPayment, onPreviewOnly 
 }) => {
   const initialDraft = React.useMemo(() => {
     try {
@@ -78,7 +79,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
   
   useEffect(() => {
     const year = new Date().getFullYear();
-    const prefix = docType === 'RECEIPT' ? 'RES' : docType === 'INVOICE' ? 'INV' : 'QTN';
+    const prefix = docType === 'RECEIPT' ? 'RES' : docType === 'INVOICE' ? 'INV' : docType === 'QUOTATION' ? 'QTN' : 'PV';
     setInvNo(`${prefix}-${year}${String(invCounter).padStart(4, '0')}`);
   }, [invCounter, docType]);
 
@@ -149,7 +150,8 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
     const titleMap = {
       'RECEIPT': 'RESIT RASMI',
       'INVOICE': 'INVOIS',
-      'QUOTATION': 'SEBUTHARGA'
+      'QUOTATION': 'SEBUTHARGA',
+      'PAYMENT_VOUCHER': 'BAUCAR BAYARAN'
     };
 
     onProcessPayment({
@@ -188,6 +190,47 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
     setPaymentRef('');
   };
 
+  const previewInvoice = () => {
+    if (!selectedCustomer) {
+      setShowValidation(true);
+      return;
+    }
+    if (currentItems.length === 0) return alert("Sila tambah item ke dalam senarai sebelum pratonton!");
+
+    const titleMap = {
+      'RECEIPT': 'RESIT RASMI',
+      'INVOICE': 'INVOIS',
+      'QUOTATION': 'SEBUTHARGA',
+      'PAYMENT_VOUCHER': 'BAUCAR BAYARAN'
+    };
+
+    if (onPreviewOnly) {
+      onPreviewOnly({
+        docType,
+        title: titleMap[docType],
+        customer: selectedCustomer,
+        customerPhone,
+        customerAddress,
+        docNo: invNo,
+        date: date,
+        notes: notes,
+        customHeader,
+        customFooter,
+        companyAddress,
+        companyContact,
+        paymentMethod,
+        paymentRef,
+        items: currentItems.map(it => ({
+          name: it.quantity > 1 ? `${it.name} (x${it.quantity})` : it.name,
+          price: it.price * it.quantity
+        })),
+        total: total,
+        autoPrint: false,
+        printMode: defaultPrintMode
+      });
+    }
+  };
+
   const addQuickNote = (text: string) => {
     setNotes(prev => prev ? `${prev}\n${text}` : text);
   };
@@ -220,51 +263,51 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
   return (
     <div className="animate-fadeIn space-y-10">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-white/5 pb-8">
+      <div className="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-white/5 pb-4">
         <div>
-          <h2 className="text-3xl font-black uppercase tracking-tighter text-white">Penjanaan Dokumen Rasmi</h2>
-          <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.2em] mt-1 italic">Resit Rasmi • Invois • Sebutharga</p>
+          <h2 className="text-2xl font-black uppercase tracking-tighter text-white">Penjanaan Dokumen Rasmi</h2>
+          <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-1 italic">Resit Rasmi • Invois • Sebutharga • Baucar Bayaran</p>
         </div>
-        <div className="bg-[#0a0a0a] p-2 rounded-2xl flex gap-1 border border-white/10 shadow-2xl">
-          {(['RECEIPT', 'INVOICE', 'QUOTATION'] as DocType[]).map((type) => (
+        <div className="bg-[#0a0a0a] p-1.5 rounded-xl flex flex-wrap gap-1 border border-white/10 shadow-xl">
+          {(['RECEIPT', 'INVOICE', 'QUOTATION', 'PAYMENT_VOUCHER'] as DocType[]).map((type) => (
             <button
               key={type}
               onClick={() => setDocType(type)}
-              className={`py-3 px-10 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
+              className={`py-2 px-4 md:px-6 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
                 docType === type 
-                ? 'bg-[#FFD700] text-black shadow-[0_0_25px_rgba(255,215,0,0.3)] scale-[1.05]' 
+                ? 'bg-[#FFD700] text-black shadow-[0_0_15px_rgba(255,215,0,0.3)] scale-[1.02]' 
                 : 'text-gray-500 hover:text-white hover:bg-white/5'
               }`}
             >
-              {type === 'RECEIPT' ? 'Resit' : type === 'INVOICE' ? 'Invois' : 'Sebutharga'}
+              {type === 'RECEIPT' ? 'Resit' : type === 'INVOICE' ? 'Invois' : type === 'QUOTATION' ? 'Sebutharga' : 'Baucar Bayaran'}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Configuration */}
-        <div className="lg:col-span-4 space-y-8">
+        <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-4 h-fit">
           {/* Reference & Date Card */}
-          <div className="bg-[#0a0a0a] p-8 rounded-[32px] border border-white/5 shadow-2xl space-y-6">
-            <div className="space-y-1.5">
-              <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Tarikh Dokumen</label>
+          <div className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 shadow-xl space-y-4">
+            <div className="space-y-1">
+              <label className="block text-[8px] font-black uppercase text-gray-500 tracking-widest ml-1">Tarikh Dokumen</label>
               <input 
                 type="date" 
                 value={date} 
                 onChange={e => setDate(e.target.value)} 
-                className="w-full bg-black border border-white/10 text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold"
+                className="w-full bg-black border border-white/10 text-white p-3 rounded-xl focus:outline-none focus:border-[#FFD700] transition-all text-xs font-bold"
               />
             </div>
           </div>
 
           {/* Document Settings Card */}
-          <div className="bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 shadow-2xl space-y-6">
-            <h3 className="text-[#FFD700] text-[10px] font-black uppercase tracking-[0.3em] border-b border-[#FFD700]/10 pb-4 italic flex items-center gap-2">
+          <div className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 shadow-xl space-y-4">
+            <h3 className="text-[#FFD700] text-[9px] font-black uppercase tracking-[0.3em] border-b border-[#FFD700]/10 pb-2 italic flex items-center gap-2">
               <i className="fas fa-sliders-h"></i> Tetapan Dokumen
             </h3>
-            <div className="space-y-4">
-              <div className="space-y-1.5">
+            <div className="space-y-3">
+              <div className="space-y-1">
                 <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Mod Cetakan Lalai</label>
                 <div className="flex gap-2">
                   <button
@@ -282,57 +325,57 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Nama Syarikat / Header (Atas)</label>
+              <div className="space-y-1">
+                <label className="block text-[8px] font-black uppercase text-gray-500 tracking-widest ml-1">Nama Syarikat / Header</label>
                 <div className="relative">
-                  <i className="fas fa-heading absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                  <i className="fas fa-heading absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
                   <input 
                     type="text" 
                     value={customHeader}
                     onChange={e => onUpdateSettings({ customHeader: e.target.value.toUpperCase() })}
-                    placeholder="CTH: PEGUAM SYARIE & PESURUHJAYA SUMPAH"
-                    className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold uppercase"
+                    placeholder="CTH: PEGUAM SYARIE..."
+                    className="w-full bg-black border border-white/10 text-white p-3 pl-8 rounded-xl focus:outline-none focus:border-[#FFD700] transition-all text-xs font-bold uppercase"
                   />
                 </div>
               </div>
               
-              <div className="space-y-1.5">
-                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Alamat Syarikat</label>
+              <div className="space-y-1">
+                <label className="block text-[8px] font-black uppercase text-gray-500 tracking-widest ml-1">Alamat Syarikat</label>
                 <div className="relative">
-                  <i className="fas fa-building absolute left-4 top-4 text-gray-500"></i>
+                  <i className="fas fa-building absolute left-3 top-3 text-gray-500 text-xs"></i>
                   <textarea 
                     value={companyAddress}
                     onChange={e => onUpdateSettings({ companyAddress: e.target.value })}
-                    placeholder="CTH: Lot 02, Bangunan Arked Mara..."
-                    className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold h-20 resize-none"
+                    placeholder="CTH: Lot 02..."
+                    className="w-full bg-black border border-white/10 text-white p-3 pl-8 rounded-xl focus:outline-none focus:border-[#FFD700] transition-all text-xs font-bold h-12 resize-none"
                   ></textarea>
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">No. Telefon & Emel Syarikat</label>
+              <div className="space-y-1">
+                <label className="block text-[8px] font-black uppercase text-gray-500 tracking-widest ml-1">No. Tel & Emel</label>
                 <div className="relative">
-                  <i className="fas fa-address-book absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                  <i className="fas fa-address-book absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
                   <input 
                     type="text" 
                     value={companyContact}
                     onChange={e => onUpdateSettings({ companyContact: e.target.value })}
-                    placeholder="CTH: Tel: +6011... | Emel: info@..."
-                    className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold"
+                    placeholder="Tel: ... | Emel: ..."
+                    className="w-full bg-black border border-white/10 text-white p-3 pl-8 rounded-xl focus:outline-none focus:border-[#FFD700] transition-all text-xs font-bold"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Nota Kaki / Footer (Bawah)</label>
+              <div className="space-y-1">
+                <label className="block text-[8px] font-black uppercase text-gray-500 tracking-widest ml-1">Nota Kaki / Footer</label>
                 <div className="relative">
-                  <i className="fas fa-shoe-prints absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                  <i className="fas fa-shoe-prints absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
                   <input 
                     type="text" 
                     value={customFooter}
                     onChange={e => onUpdateSettings({ customFooter: e.target.value.toUpperCase() })}
-                    placeholder="CTH: TERIMA KASIH ATAS URUSAN ANDA"
-                    className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold uppercase"
+                    placeholder="CTH: TERIMA KASIH..."
+                    className="w-full bg-black border border-white/10 text-white p-3 pl-8 rounded-xl focus:outline-none focus:border-[#FFD700] transition-all text-xs font-bold uppercase"
                   />
                 </div>
               </div>
@@ -340,89 +383,89 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
           </div>
 
           {/* Customer Selection Card */}
-          <div className="bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 shadow-2xl space-y-6">
-            <h3 className="text-[#FFD700] text-[10px] font-black uppercase tracking-[0.3em] border-b border-[#FFD700]/10 pb-4 italic flex items-center gap-2">
+          <div className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 shadow-xl space-y-4">
+            <h3 className="text-[#FFD700] text-[9px] font-black uppercase tracking-[0.3em] border-b border-[#FFD700]/10 pb-2 italic flex items-center gap-2">
               <i className="fas fa-user-circle"></i> Maklumat Penerima
             </h3>
             
-            <div className="space-y-5">
-              <div className="space-y-1.5">
-                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Carian Klien Guaman</label>
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <label className="block text-[8px] font-black uppercase text-gray-500 tracking-widest ml-1">Carian Klien Guaman</label>
                 <div className="relative">
-                  <i className="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                  <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
                   <select 
                     onChange={handleCustomerSelect}
-                    className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold cursor-pointer appearance-none"
+                    className="w-full bg-black border border-white/10 text-white p-3 pl-8 rounded-xl focus:outline-none focus:border-[#FFD700] transition-all text-xs font-bold cursor-pointer appearance-none"
                   >
                     <option value="MANUAL">-- MASUKKAN MANUAL --</option>
                     {clients.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                     <option value="PELANGGAN TUNAI">PELANGGAN TUNAI (CASH)</option>
                   </select>
-                  <i className="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+                  <i className="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none text-xs"></i>
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className={`block text-[9px] font-black uppercase tracking-widest ml-1 ${showValidation && !selectedCustomer ? 'text-rose-500' : 'text-gray-500'}`}>
+              <div className="space-y-1">
+                <label className={`block text-[8px] font-black uppercase tracking-widest ml-1 ${showValidation && !selectedCustomer ? 'text-rose-500' : 'text-gray-500'}`}>
                   Nama Penuh {showValidation && !selectedCustomer && "(! WAJIB)"}
                 </label>
                 <div className="relative">
-                  <i className={`fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 ${showValidation && !selectedCustomer ? 'text-rose-500' : 'text-gray-500'}`}></i>
+                  <i className={`fas fa-id-card absolute left-3 top-1/2 -translate-y-1/2 text-xs ${showValidation && !selectedCustomer ? 'text-rose-500' : 'text-gray-500'}`}></i>
                   <input 
                     type="text" 
                     value={selectedCustomer}
                     onChange={e => setSelectedCustomer(e.target.value.toUpperCase())}
                     placeholder="NAMA PENUH"
-                    className={`w-full bg-black border text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold uppercase ${showValidation && !selectedCustomer ? 'border-rose-500 bg-rose-500/5' : 'border-white/10'}`}
+                    className={`w-full bg-black border text-white p-3 pl-8 rounded-xl focus:outline-none focus:border-[#FFD700] transition-all text-xs font-bold uppercase ${showValidation && !selectedCustomer ? 'border-rose-500 bg-rose-500/5' : 'border-white/10'}`}
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">No. Telefon</label>
+              <div className="space-y-1">
+                <label className="block text-[8px] font-black uppercase text-gray-500 tracking-widest ml-1">No. Telefon</label>
                 <div className="relative">
-                  <i className="fas fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                  <i className="fas fa-phone absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
                   <input 
                     type="text" 
                     value={customerPhone}
                     onChange={e => setCustomerPhone(e.target.value)}
                     placeholder="012..."
-                    className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold"
+                    className="w-full bg-black border border-white/10 text-white p-3 pl-8 rounded-xl focus:outline-none focus:border-[#FFD700] transition-all text-xs font-bold"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Alamat Penuh</label>
+              <div className="space-y-1">
+                <label className="block text-[8px] font-black uppercase text-gray-500 tracking-widest ml-1">Alamat Penuh</label>
                 <div className="relative">
-                  <i className="fas fa-map-marker-alt absolute left-4 top-4 text-gray-500"></i>
+                  <i className="fas fa-map-marker-alt absolute left-3 top-3 text-gray-500 text-xs"></i>
                   <textarea 
                     value={customerAddress}
                     onChange={e => setCustomerAddress(e.target.value.toUpperCase())}
                     placeholder="ALAMAT LENGKAP..."
-                    className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold h-24 resize-none uppercase"
+                    className="w-full bg-black border border-white/10 text-white p-3 pl-8 rounded-xl focus:outline-none focus:border-[#FFD700] transition-all text-xs font-bold h-12 resize-none uppercase"
                   ></textarea>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Payment Details Card - Only show for Receipt */}
-          {docType === 'RECEIPT' && (
-            <div className="bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 shadow-2xl space-y-6 animate-fadeIn">
-              <h3 className="text-[#FFD700] text-[10px] font-black uppercase tracking-[0.3em] border-b border-[#FFD700]/10 pb-4 italic flex items-center gap-2">
+          {/* Payment Details Card - Only show for Receipt and Payment Voucher */}
+          {(docType === 'RECEIPT' || docType === 'PAYMENT_VOUCHER') && (
+            <div className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 shadow-xl space-y-4 animate-fadeIn">
+              <h3 className="text-[#FFD700] text-[9px] font-black uppercase tracking-[0.3em] border-b border-[#FFD700]/10 pb-2 italic flex items-center gap-2">
                 <i className="fas fa-wallet"></i> Maklumat Pembayaran
               </h3>
               
-              <div className="space-y-5">
-                <div className="space-y-1.5">
-                  <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Kaedah Pembayaran</label>
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <label className="block text-[8px] font-black uppercase text-gray-500 tracking-widest ml-1">Kaedah Pembayaran</label>
                   <div className="relative">
-                    <i className="fas fa-money-bill-wave absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                    <i className="fas fa-money-bill-wave absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
                     <select 
                       value={paymentMethod}
                       onChange={e => setPaymentMethod(e.target.value)}
-                      className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold cursor-pointer appearance-none"
+                      className="w-full bg-black border border-white/10 text-white p-3 pl-8 rounded-xl focus:outline-none focus:border-[#FFD700] transition-all text-xs font-bold cursor-pointer appearance-none"
                     >
                       <option value="TUNAI">TUNAI (CASH)</option>
                       <option value="PINDAHAN BANK">PINDAHAN BANK (ONLINE TRANSFER)</option>
@@ -430,20 +473,20 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
                       <option value="KAD KREDIT/DEBIT">KAD KREDIT / DEBIT</option>
                       <option value="LAIN-LAIN">LAIN-LAIN</option>
                     </select>
-                    <i className="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+                    <i className="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none text-xs"></i>
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">No. Rujukan Transaksi / Cek</label>
+                <div className="space-y-1">
+                  <label className="block text-[8px] font-black uppercase text-gray-500 tracking-widest ml-1">No. Rujukan Transaksi / Cek</label>
                   <div className="relative">
-                    <i className="fas fa-hashtag absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                    <i className="fas fa-hashtag absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
                     <input 
                       type="text" 
                       value={paymentRef}
                       onChange={e => setPaymentRef(e.target.value.toUpperCase())}
-                      placeholder="CTH: REF123456789"
-                      className="w-full bg-black border border-white/10 text-white p-4 pl-10 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold uppercase"
+                      placeholder="CTH: REF123..."
+                      className="w-full bg-black border border-white/10 text-white p-3 pl-8 rounded-xl focus:outline-none focus:border-[#FFD700] transition-all text-xs font-bold uppercase"
                     />
                   </div>
                 </div>
@@ -453,15 +496,15 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
         </div>
 
         {/* Right Column: Items & Actions */}
-        <div className="lg:col-span-8 space-y-8">
+        <div className="lg:col-span-8 space-y-4">
           {/* Item Entry Area */}
-          <div className="bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 shadow-2xl">
-            <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
-              <h3 className="text-[#FFD700] text-[10px] font-black uppercase tracking-[0.3em] italic">Butiran Perkhidmatan</h3>
-              <div className="flex gap-3">
+          <div className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 shadow-xl">
+            <div className="flex justify-between items-center mb-4 border-b border-white/5 pb-2">
+              <h3 className="text-[#FFD700] text-[9px] font-black uppercase tracking-[0.3em] italic">Butiran Perkhidmatan</h3>
+              <div className="flex gap-2">
                 <button 
                   onClick={addEmptyRow}
-                  className="px-5 py-2.5 bg-[#111] text-gray-300 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest hover:text-white hover:border-white/30 hover:bg-black transition-all duration-300 shadow-lg flex items-center gap-2 group"
+                  className="px-4 py-2 bg-[#111] text-gray-300 border border-white/10 rounded-lg text-[9px] font-black uppercase tracking-widest hover:text-white hover:border-white/30 hover:bg-black transition-all duration-300 shadow-lg flex items-center gap-1.5 group"
                 >
                   <i className="fas fa-plus group-hover:rotate-90 transition-transform duration-300"></i> BARIS KOSONG
                 </button>
@@ -469,8 +512,8 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
             </div>
 
             {/* Manual Entry Row */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 mb-8 bg-[#111] p-4 rounded-2xl border border-[#FFD700]/20 shadow-inner items-end">
-              <div className="md:col-span-6 space-y-1.5">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-2 mb-4 bg-[#111] p-3 rounded-xl border border-[#FFD700]/20 shadow-inner items-end">
+              <div className="md:col-span-6 space-y-1">
                 <label className="block text-[8px] font-black uppercase text-[#FFD700] tracking-widest ml-1">Keterangan Manual</label>
                 <div className="relative">
                   <i className="fas fa-pen absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
@@ -516,53 +559,53 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
             </div>
 
             {/* Item List Table */}
-            <div className="overflow-hidden rounded-2xl border border-white/5">
-              <table className="w-full text-left border-collapse">
+            <div className="overflow-x-auto rounded-xl border border-white/5">
+              <table className="w-full text-left border-collapse min-w-[500px]">
                 <thead>
-                  <tr className="bg-black text-gray-500 text-[9px] font-black uppercase tracking-widest">
-                    <th className="p-4">Butiran</th>
-                    <th className="p-4 text-center w-20">Unit</th>
-                    <th className="p-4 text-right w-32">Harga (RM)</th>
-                    <th className="p-4 text-right w-32">Subtotal</th>
-                    <th className="p-4 w-12"></th>
+                  <tr className="bg-black text-gray-500 text-[8px] font-black uppercase tracking-widest">
+                    <th className="p-3">Butiran</th>
+                    <th className="p-3 text-center w-16">Unit</th>
+                    <th className="p-3 text-right w-24">Harga (RM)</th>
+                    <th className="p-3 text-right w-24">Subtotal</th>
+                    <th className="p-3 w-10"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {currentItems.length === 0 ? (
-                    <tr><td colSpan={5} className="p-12 text-center text-gray-700 text-[10px] font-bold uppercase tracking-widest italic">Senarai item masih kosong.</td></tr>
+                    <tr><td colSpan={5} className="p-8 text-center text-gray-700 text-[9px] font-bold uppercase tracking-widest italic">Senarai item masih kosong.</td></tr>
                   ) : (
                     currentItems.map((it, idx) => (
                       <tr key={idx} className="group hover:bg-white/[0.01] transition-colors">
-                        <td className="p-4">
+                        <td className="p-3">
                           <input 
                             type="text" 
                             value={it.name}
                             onChange={(e) => updateItem(idx, 'name', e.target.value)}
-                            className="w-full bg-transparent border-none focus:ring-0 text-white font-bold text-sm uppercase p-0"
+                            className="w-full bg-transparent border-none focus:ring-0 text-white font-bold text-xs uppercase p-0"
                           />
                         </td>
-                        <td className="p-4">
+                        <td className="p-3">
                           <input 
                             type="number" 
                             value={it.quantity}
                             onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
-                            className="w-full bg-transparent border-none focus:ring-0 text-white font-bold text-sm text-center p-0"
+                            className="w-full bg-transparent border-none focus:ring-0 text-white font-bold text-xs text-center p-0"
                           />
                         </td>
-                        <td className="p-4">
+                        <td className="p-3">
                           <input 
                             type="number" 
                             step="0.01"
                             value={it.price || ''}
                             onChange={(e) => updateItem(idx, 'price', e.target.value)}
-                            className="w-full bg-transparent border-none focus:ring-0 text-white font-bold text-sm text-right p-0"
+                            className="w-full bg-transparent border-none focus:ring-0 text-white font-bold text-xs text-right p-0"
                           />
                         </td>
-                        <td className="p-4 text-right font-black text-white tabular-nums">
+                        <td className="p-3 text-right font-black text-white tabular-nums text-xs">
                           {(it.price * it.quantity).toLocaleString('en-MY', { minimumFractionDigits: 2 })}
                         </td>
-                        <td className="p-4 text-center">
-                          <button onClick={() => removeItem(idx)} className="text-gray-700 hover:text-rose-500 transition-colors">
+                        <td className="p-3 text-center">
+                          <button onClick={() => removeItem(idx)} className="text-gray-700 hover:text-rose-500 transition-colors text-xs">
                             <i className="fas fa-times"></i>
                           </button>
                         </td>
@@ -575,57 +618,57 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
           </div>
 
           {/* Footer: Summary & Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Notes & Ledger Pull */}
-            <div className="space-y-6">
-              <div className="bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 shadow-2xl space-y-4">
-                <label className="block text-[9px] font-black uppercase text-gray-500 tracking-widest ml-1">Nota Tambahan</label>
+            <div className="space-y-4">
+              <div className="bg-[#0a0a0a] p-5 rounded-2xl border border-white/5 shadow-xl space-y-2">
+                <label className="block text-[8px] font-black uppercase text-gray-500 tracking-widest ml-1">Nota Tambahan</label>
                 <textarea 
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
                   placeholder="Nota untuk dipaparkan di dokumen..."
-                  className="w-full bg-black border border-white/10 text-white p-4 rounded-2xl focus:outline-none focus:border-[#FFD700] transition-all text-sm font-bold h-32 resize-none"
+                  className="w-full bg-black border border-white/10 text-white p-3 rounded-xl focus:outline-none focus:border-[#FFD700] transition-all text-xs font-bold h-20 resize-none"
                 ></textarea>
               </div>
               
-              <div className="bg-[#0a0a0a] p-6 rounded-3xl border border-[#FFD700]/10 shadow-2xl flex items-center justify-between gap-4">
+              <div className="bg-[#0a0a0a] p-4 rounded-2xl border border-[#FFD700]/10 shadow-xl flex items-center justify-between gap-3">
                 <div className="flex-1">
-                  <p className="text-[9px] font-black uppercase text-[#FFD700] tracking-widest mb-2 italic">Tarik Data Ledger</p>
+                  <p className="text-[8px] font-black uppercase text-[#FFD700] tracking-widest mb-1.5 italic">Tarik Data Ledger</p>
                   <div className="flex gap-2">
-                    <input type="date" value={importStartDate} onChange={e => setImportStartDate(e.target.value)} className="bg-black border border-white/5 text-[10px] p-2 rounded-lg text-white outline-none w-full" />
-                    <input type="date" value={importEndDate} onChange={e => setImportEndDate(e.target.value)} className="bg-black border border-white/5 text-[10px] p-2 rounded-lg text-white outline-none w-full" />
+                    <input type="date" value={importStartDate} onChange={e => setImportStartDate(e.target.value)} className="bg-black border border-white/5 text-[9px] p-1.5 rounded-md text-white outline-none w-full" />
+                    <input type="date" value={importEndDate} onChange={e => setImportEndDate(e.target.value)} className="bg-black border border-white/5 text-[9px] p-1.5 rounded-md text-white outline-none w-full" />
                   </div>
                 </div>
-                <button onClick={pullLedgerData} disabled={!clients.some(c => c.name === selectedCustomer)} className="bg-[#FFD700] text-black w-12 h-12 rounded-2xl flex items-center justify-center hover:bg-[#FFA500] transition-all disabled:opacity-20 shadow-lg">
+                <button onClick={pullLedgerData} disabled={!clients.some(c => c.name === selectedCustomer)} className="bg-[#FFD700] text-black w-10 h-10 rounded-xl flex items-center justify-center hover:bg-[#FFA500] transition-all disabled:opacity-20 shadow-lg text-sm">
                   <i className="fas fa-download"></i>
                 </button>
               </div>
             </div>
 
             {/* Total & Finalize */}
-            <div className="bg-[#0a0a0a] p-10 rounded-[40px] border border-white/5 shadow-2xl flex flex-col justify-between items-center text-center relative overflow-hidden group">
-              <div className="absolute top-0 left-0 w-full h-2 bg-[#FFD700]"></div>
+            <div className="bg-[#0a0a0a] p-6 rounded-[32px] border border-white/5 shadow-xl flex flex-col justify-between items-center text-center relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-[#FFD700]"></div>
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.4em] text-gray-500 mb-6">Jumlah Keseluruhan</p>
-                <div className="flex items-baseline justify-center gap-3">
-                  <span className="text-3xl font-black text-[#FFD700]/30">RM</span>
-                  <span className="text-7xl font-black tabular-nums tracking-tighter text-white">{total.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</span>
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 mb-3">Jumlah Keseluruhan</p>
+                <div className="flex items-baseline justify-center gap-2">
+                  <span className="text-xl font-black text-[#FFD700]/30">RM</span>
+                  <span className="text-5xl font-black tabular-nums tracking-tighter text-white">{total.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</span>
                 </div>
               </div>
 
-              <div className="w-full space-y-4 mt-10">
+              <div className="w-full space-y-3 mt-6">
                 <button 
                   onClick={() => processInvoice(defaultPrintMode, true)}
                   disabled={currentItems.length === 0}
-                  className="w-full bg-[#FFD700] text-black py-5 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-[#FFA500] transition-all shadow-xl active:scale-95 disabled:opacity-30"
+                  className="w-full bg-[#FFD700] text-black py-4 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-[#FFA500] transition-all shadow-xl active:scale-95 disabled:opacity-30"
                 >
-                  <i className="fas fa-print mr-3"></i> Jana & Cetak ({defaultPrintMode === 'standard' ? 'A5/PDF' : 'Thermal'})
+                  <i className="fas fa-print mr-2"></i> Jana & Cetak Baru ({defaultPrintMode === 'standard' ? 'A5/PDF' : 'Thermal'})
                 </button>
-                <div className="grid grid-cols-2 gap-3">
-                  <button onClick={() => processInvoice(defaultPrintMode === 'standard' ? 'thermal' : 'standard', true)} disabled={currentItems.length === 0} className="bg-[#111] text-[#FFD700] py-4 rounded-xl font-black uppercase tracking-widest text-[9px] border border-[#FFD700]/20 hover:bg-black transition-all disabled:opacity-30">
-                    Cetak {defaultPrintMode === 'standard' ? 'Thermal' : 'A5/PDF'}
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={previewInvoice} disabled={currentItems.length === 0} className="bg-[#111] text-[#FFD700] py-3 rounded-lg font-black uppercase tracking-widest text-[8px] border border-[#FFD700]/20 hover:bg-[#FFD700] hover:text-black transition-all disabled:opacity-30">
+                    <i className="fas fa-eye mr-1.5"></i> Pratonton Semasa
                   </button>
-                  <button onClick={() => processInvoice('standard', false)} disabled={currentItems.length === 0} className="bg-[#111] text-gray-500 py-4 rounded-xl font-black uppercase tracking-widest text-[9px] border border-white/5 hover:bg-black transition-all disabled:opacity-30">
+                  <button onClick={() => processInvoice('standard', false)} disabled={currentItems.length === 0} className="bg-[#111] text-gray-500 py-3 rounded-lg font-black uppercase tracking-widest text-[8px] border border-white/5 hover:bg-black transition-all disabled:opacity-30">
                     Rekod Sahaja
                   </button>
                 </div>
