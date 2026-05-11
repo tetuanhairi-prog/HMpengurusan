@@ -190,6 +190,7 @@ const App: React.FC = () => {
             {currentPage === 'invoice' && (
               <InvoicePage 
                 clients={clients} 
+                generatedDocs={state.generatedDocs || []}
                 invCounter={invCounter}
                 customHeader={state.customHeader}
                 customFooter={state.customFooter}
@@ -199,10 +200,27 @@ const App: React.FC = () => {
                 onUpdateSettings={(updates) => updateState(updates)}
                 onProcessPayment={(receipt) => {
                   setReceiptData(receipt);
-                  updateState({ invCounter: invCounter + 1 });
+                  const newDoc = {
+                    id: Date.now().toString(),
+                    docType: receipt.docType,
+                    docNo: receipt.docNo,
+                    date: receipt.date,
+                    customer: receipt.customer,
+                    details: receipt.items.map((i: any) => i.name).join(', '),
+                    total: receipt.total
+                  };
+                  updateState({ 
+                    invCounter: invCounter + 1,
+                    generatedDocs: [newDoc, ...(state.generatedDocs || [])]
+                  });
                 }}
                 onPreviewOnly={(receipt) => {
                   setReceiptData(receipt);
+                }}
+                onDeleteDocument={(id) => {
+                  updateState({
+                    generatedDocs: (state.generatedDocs || []).filter(d => d.id !== id)
+                  });
                 }}
               />
             )}

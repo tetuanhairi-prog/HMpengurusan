@@ -45,6 +45,24 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
   const docType = data.docType || (data.isStatement ? 'STATEMENT' : 'RECEIPT');
   const isThermal = data.printMode === 'thermal';
 
+  // Auto-resize textareas
+  useEffect(() => {
+    if (receiptRef.current) {
+      const textareas = receiptRef.current.querySelectorAll('textarea.auto-resize');
+      textareas.forEach(ta => {
+        const el = ta as HTMLTextAreaElement;
+        el.style.height = '0px';
+        el.style.height = `${el.scrollHeight}px`;
+      });
+    }
+  }, [localCustomer, localAddress]);
+
+  const handleResize = (e: React.ChangeEvent<HTMLTextAreaElement> | React.FocusEvent<HTMLTextAreaElement>) => {
+    const el = e.target as HTMLTextAreaElement;
+    el.style.height = '0px';
+    el.style.height = `${el.scrollHeight}px`;
+  };
+
   useEffect(() => {
     if (data.autoPrint) {
       const timer = setTimeout(() => {
@@ -65,6 +83,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
       const canvas = await html2canvas(receiptRef.current, {
         scale: 2,
         useCORS: true,
+        allowTaint: true,
         logging: false,
         backgroundColor: '#ffffff'
       });
@@ -198,8 +217,8 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
     return (
       <div ref={receiptRef} id="receipt-print" className="bg-white text-black p-4 w-[80mm] mx-auto font-mono text-[12px] animate-fadeIn relative print:m-0 print:w-full">
         <div className="text-center mb-6">
-          <img src={displayLogo} alt="Logo" className="h-14 mx-auto mb-2 grayscale" />
-          <h1 className="font-bold text-lg leading-tight uppercase">{data.customHeader || 'HAIRI MUSTAFA ASSOCIATES'}</h1>
+          <img src={displayLogo} crossOrigin="anonymous" alt="Logo" className="h-14 mx-auto mb-2 grayscale" />
+          <h1 className="font-bold text-lg leading-tight uppercase">HAIRI MUSTAFA ASSOCIATES</h1>
           <p className="text-[10px] uppercase">Peguam Syarie & Pesuruhjaya Sumpah</p>
           <div className="border-t border-dashed border-black mt-2 pt-2">
             <h2 className="font-bold text-base underline uppercase">{labels.typeLabel}</h2>
@@ -210,11 +229,12 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
           <p><span className="font-bold">TARIKH:</span> {formatDate(data.date)}</p>
           <div className="border-t border-black/10 pt-1 flex items-start">
             <span className="font-bold mr-1">KLIEN:</span>
-            <input 
-              type="text"
+            <textarea 
               value={localCustomer}
-              onChange={e => setLocalCustomer(e.target.value.toUpperCase())}
-              className="bg-transparent border-none p-0 focus:outline-none w-full uppercase font-mono text-[12px] hover:bg-black/5 transition-colors print:hover:bg-transparent"
+              onChange={e => { setLocalCustomer(e.target.value.toUpperCase()); handleResize(e); }}
+              onFocus={handleResize}
+              className="auto-resize bg-transparent border-none p-0 focus:outline-none w-full uppercase font-mono text-[12px] hover:bg-black/5 transition-colors print:hover:bg-transparent resize-none overflow-hidden"
+              rows={1}
             />
           </div>
           {data.paymentMethod && (data.docType === 'RECEIPT' || data.docType === 'PAYMENT_VOUCHER') && (
@@ -278,19 +298,19 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
       <div className="relative z-10 flex flex-row items-start justify-between mb-4 pb-3 border-b border-black">
         <div className="flex flex-row items-center gap-4">
           <div className="shrink-0">
-             <img src={displayLogo} alt="Logo" className="h-16 w-auto object-contain" />
+             <img src={displayLogo} crossOrigin="anonymous" alt="Logo" className="h-16 w-auto object-contain" />
           </div>
           <div className="flex-1 flex flex-col justify-center">
             <h1 className="text-xl font-bold m-0 leading-none uppercase text-black tracking-tight font-legal">
-              {data.customHeader || 'HAIRI MUSTAFA ASSOCIATES'}
+              HAIRI MUSTAFA ASSOCIATES
             </h1>
             <p className="text-[9px] font-black m-0 uppercase tracking-[0.2em] text-gray-500 mt-0.5 font-sans">
               Peguam Syarie & Pesuruhjaya Sumpah
             </p>
             <div className="text-[7px] mt-1.5 text-gray-600 leading-tight font-sans font-medium uppercase tracking-[0.05em] max-w-xs whitespace-pre-line">
-              {data.companyAddress || 'Lot 02, Bangunan Arked Mara, 09100 Baling, Kedah Darul Aman'}
+              Lot 02, Bangunan Arked Mara, 09100 Baling, Kedah
               <br/>
-              {data.companyContact || 'Tel: +60 11 5653 1310 | Emel: hairimustafa.legal@gmail.com'}
+              Tel: 01156531310 | Emel: tetuanhairi@gmail.com
             </div>
           </div>
         </div>
@@ -316,18 +336,20 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
                 <p className="text-gray-400 uppercase text-[8px] font-black mb-1.5 tracking-[0.15em] italic font-sans">
                   {labels.customerLabel}
                 </p>
-                <input
-                  type="text"
+                <textarea
                   value={localCustomer}
-                  onChange={e => setLocalCustomer(e.target.value.toUpperCase())}
-                  className="font-bold text-lg uppercase leading-tight text-black mb-0.5 font-legal bg-transparent border-none p-0 focus:outline-none w-full hover:bg-black/5 transition-colors print:hover:bg-transparent"
+                  onChange={e => { setLocalCustomer(e.target.value.toUpperCase()); handleResize(e); }}
+                  onFocus={handleResize}
+                  className="auto-resize font-bold text-lg uppercase leading-tight text-black mb-0.5 font-legal bg-transparent border-none p-0 focus:outline-none w-full hover:bg-black/5 transition-colors print:hover:bg-transparent resize-none overflow-hidden"
                   placeholder="NAMA KLIEN"
+                  rows={1}
                 />
                 {data.customerPhone && <p className="text-[9px] font-black text-gray-500 tracking-[0.05em] uppercase font-sans">T: {data.customerPhone}</p>}
                 <textarea
                   value={localAddress}
-                  onChange={e => setLocalAddress(e.target.value.toUpperCase())}
-                  className="text-[8px] text-gray-500 uppercase leading-tight font-medium mt-1.5 max-w-[180px] w-full italic font-sans bg-transparent border-none p-0 focus:outline-none resize-none hover:bg-black/5 transition-colors print:hover:bg-transparent overflow-hidden"
+                  onChange={e => { setLocalAddress(e.target.value.toUpperCase()); handleResize(e); }}
+                  onFocus={handleResize}
+                  className="auto-resize text-[8px] text-gray-500 uppercase leading-tight font-medium mt-1.5 max-w-[180px] w-full italic font-sans bg-transparent border-none p-0 focus:outline-none resize-none hover:bg-black/5 transition-colors print:hover:bg-transparent overflow-hidden"
                   placeholder="ALAMAT KLIEN..."
                   rows={3}
                 />
@@ -415,7 +437,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
         {/* Professional Firm Footer */}
         <div className="flex justify-between items-center pt-3 border-t border-gray-100">
           <div>
-             <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-black font-legal">{data.customHeader || 'HAIRI MUSTAFA ASSOCIATES'}</p>
+             <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-black font-legal">HAIRI MUSTAFA ASSOCIATES</p>
              <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mt-0.5 font-sans">
                {data.customFooter || 'Peguam Syarie & Pesuruhjaya Sumpah'}
              </p>

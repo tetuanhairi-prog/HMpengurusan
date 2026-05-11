@@ -31,10 +31,21 @@ export interface ServiceItem {
 export type PageId = 'guaman' | 'invoice';
 export type ThemeMode = 'light' | 'dark';
 
+export interface GeneratedDocument {
+  id: string;
+  docType: string;
+  docNo: string;
+  date: string;
+  customer: string;
+  details: string;
+  total: number;
+}
+
 export interface AppState {
   clients: Client[];
   pjsRecords: PjsRecord[];
   inventory: ServiceItem[];
+  generatedDocs: GeneratedDocument[];
   invCounter: number;
   firmLogo: string | null;
   customHeader: string;

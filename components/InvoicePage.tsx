@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { Client, ServiceItem } from '../types';
+import { Client, ServiceItem, GeneratedDocument } from '../types';
 import { formatDate } from '../utils/dateUtils';
 
 type DocType = 'RECEIPT' | 'INVOICE' | 'QUOTATION' | 'PAYMENT_VOUCHER';
 
 interface InvoicePageProps {
   clients: Client[];
+  generatedDocs: GeneratedDocument[];
   invCounter: number;
   customHeader: string;
   customFooter: string;
@@ -16,6 +17,7 @@ interface InvoicePageProps {
   onUpdateSettings: (updates: Partial<{ customHeader: string; customFooter: string; companyAddress: string; companyContact: string; defaultPrintMode: 'standard' | 'thermal' }>) => void;
   onProcessPayment: (receiptData: any) => void;
   onPreviewOnly?: (receiptData: any) => void;
+  onDeleteDocument?: (id: string) => void;
 }
 
 interface InvoiceLineItem {
@@ -25,7 +27,7 @@ interface InvoiceLineItem {
 }
 
 const InvoicePage: React.FC<InvoicePageProps> = ({ 
-  clients, invCounter, customHeader, customFooter, companyAddress, companyContact, defaultPrintMode, onUpdateSettings, onProcessPayment, onPreviewOnly 
+  clients, generatedDocs, invCounter, customHeader, customFooter, companyAddress, companyContact, defaultPrintMode, onUpdateSettings, onProcessPayment, onPreviewOnly, onDeleteDocument
 }) => {
   const initialDraft = React.useMemo(() => {
     try {
@@ -331,10 +333,9 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
                   <i className="fas fa-heading absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
                   <input 
                     type="text" 
-                    value={customHeader}
-                    onChange={e => onUpdateSettings({ customHeader: e.target.value.toUpperCase() })}
-                    placeholder="CTH: PEGUAM SYARIE..."
-                    className="w-full bg-black border border-white/10 text-white p-3 pl-8 rounded-xl focus:outline-none focus:border-[#FFD700] transition-all text-xs font-bold uppercase"
+                    value="HAIRI MUSTAFA ASSOCIATES"
+                    readOnly
+                    className="w-full bg-black/50 border border-white/5 text-gray-400 p-3 pl-8 rounded-xl outline-none text-xs font-bold uppercase cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -344,10 +345,9 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
                 <div className="relative">
                   <i className="fas fa-building absolute left-3 top-3 text-gray-500 text-xs"></i>
                   <textarea 
-                    value={companyAddress}
-                    onChange={e => onUpdateSettings({ companyAddress: e.target.value })}
-                    placeholder="CTH: Lot 02..."
-                    className="w-full bg-black border border-white/10 text-white p-3 pl-8 rounded-xl focus:outline-none focus:border-[#FFD700] transition-all text-xs font-bold h-12 resize-none"
+                    value="Lot 02, Bangunan Arked Mara, 09100 Baling, Kedah"
+                    readOnly
+                    className="w-full bg-black/50 border border-white/5 text-gray-400 p-3 pl-8 rounded-xl outline-none text-xs font-bold h-12 resize-none cursor-not-allowed"
                   ></textarea>
                 </div>
               </div>
@@ -358,10 +358,9 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
                   <i className="fas fa-address-book absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
                   <input 
                     type="text" 
-                    value={companyContact}
-                    onChange={e => onUpdateSettings({ companyContact: e.target.value })}
-                    placeholder="Tel: ... | Emel: ..."
-                    className="w-full bg-black border border-white/10 text-white p-3 pl-8 rounded-xl focus:outline-none focus:border-[#FFD700] transition-all text-xs font-bold"
+                    value="Tel: 01156531310 | Emel: tetuanhairi@gmail.com"
+                    readOnly
+                    className="w-full bg-black/50 border border-white/5 text-gray-400 p-3 pl-8 rounded-xl outline-none text-xs font-bold cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -675,6 +674,75 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Generated Documents List */}
+      <div className="bg-[#0a0a0a] p-5 rounded-3xl border border-white/5 shadow-2xl mt-8">
+        <h3 className="text-[#FFD700] text-sm font-black uppercase tracking-[0.3em] border-b border-[#FFD700]/10 pb-4 mb-4 flex items-center gap-3">
+          <i className="fas fa-list-alt"></i> Senarai Dokumen Dijana
+        </h3>
+        
+        <div className="overflow-x-auto custom-scrollbar">
+          <table className="w-full text-left border-collapse min-w-[800px]">
+             <thead>
+               <tr className="bg-black/50 text-gray-400 text-[9px] font-black uppercase tracking-widest border-b border-white/5">
+                 <th className="p-4 rounded-tl-xl">Kategori</th>
+                 <th className="p-4">No. Dokumen</th>
+                 <th className="p-4">Tarikh</th>
+                 <th className="p-4">Nama Pelanggan</th>
+                 <th className="p-4">Butiran</th>
+                 <th className="p-4 text-right">Jumlah (RM)</th>
+                 <th className="p-4 w-10 rounded-tr-xl text-center">Tindakan</th>
+               </tr>
+             </thead>
+             <tbody className="divide-y divide-white/5 disabled-text-selection">
+               {(!generatedDocs || generatedDocs.length === 0) ? (
+                 <tr>
+                   <td colSpan={7} className="p-8 text-center text-gray-600 text-[10px] font-bold uppercase tracking-widest italic">
+                     Tiada rekod dokumen buat masa ini.
+                   </td>
+                 </tr>
+               ) : (
+                 generatedDocs.map((doc, idx) => (
+                   <tr key={doc.id || idx} className="hover:bg-white/[0.02] transition-colors">
+                     <td className="p-4">
+                       <span className={`px-2 py-1 rounded text-[8px] font-black tracking-widest ${
+                         doc.docType === 'RECEIPT' ? 'bg-emerald-500/10 text-emerald-500' :
+                         doc.docType === 'INVOICE' ? 'bg-blue-500/10 text-blue-500' :
+                         doc.docType === 'QUOTATION' ? 'bg-purple-500/10 text-purple-500' :
+                         'bg-amber-500/10 text-amber-500'
+                       }`}>
+                         {doc.docType === 'RECEIPT' ? 'RESIT' : 
+                          doc.docType === 'INVOICE' ? 'INVOIS' : 
+                          doc.docType === 'QUOTATION' ? 'SEBUTHARGA' : 'BAUCAR'}
+                       </span>
+                     </td>
+                     <td className="p-4 text-xs font-mono text-gray-300">{doc.docNo}</td>
+                     <td className="p-4 text-xs text-gray-400">{formatDate(doc.date)}</td>
+                     <td className="p-4 text-xs font-bold text-white uppercase">{doc.customer}</td>
+                     <td className="p-4 text-[10px] text-gray-400 max-w-[200px] truncate" title={doc.details}>{doc.details}</td>
+                     <td className="p-4 text-right text-xs font-black text-[#FFD700] tabular-nums">
+                       {doc.total.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
+                     </td>
+                     <td className="p-4 text-center">
+                        <button 
+                          onClick={() => {
+                            if (window.confirm('Adakah anda pasti untuk memadam rekod dokumen ini?')) {
+                              onDeleteDocument?.(doc.id);
+                            }
+                          }}
+                          className="text-gray-600 hover:text-rose-500 transition-colors"
+                          title="Padam"
+                        >
+                          <i className="fas fa-trash-alt"></i>
+                        </button>
+                     </td>
+                   </tr>
+                 ))
+               )}
+             </tbody>
+          </table>
         </div>
       </div>
     </div>
