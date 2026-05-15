@@ -17,7 +17,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     saveToStorage(state);
-    document.body.style.backgroundColor = '#000000';
+    document.body.style.backgroundColor = '#ffffff';
   }, [state]);
 
   useEffect(() => {
@@ -160,9 +160,9 @@ const App: React.FC = () => {
   const isDarkMode = theme === 'dark';
 
   return (
-    <div className="min-h-screen pb-10 transition-colors duration-500 bg-black text-white">
+    <div className="min-h-screen pb-10 transition-colors duration-500 bg-white text-black">
       <div className="max-w-6xl mx-auto px-4 py-8 no-print">
-        <div className="rounded-3xl border shadow-2xl overflow-hidden transition-all bg-[#0a0a0a] border-white/5">
+        <div className="rounded-3xl border shadow-2xl overflow-hidden transition-all bg-slate-50 border-slate-200">
           <Header 
             logo={firmLogo} 
             theme={theme} 
@@ -222,6 +222,11 @@ const App: React.FC = () => {
                     generatedDocs: (state.generatedDocs || []).filter(d => d.id !== id)
                   });
                 }}
+                onBulkDeleteDocuments={(ids) => {
+                  updateState({
+                    generatedDocs: (state.generatedDocs || []).filter(d => !ids.includes(d.id))
+                  });
+                }}
               />
             )}
           </main>
@@ -229,13 +234,13 @@ const App: React.FC = () => {
       </div>
 
       {receiptData && (
-        <div ref={receiptRef} className="max-w-6xl mx-auto px-4 py-12 animate-fadeIn border-t border-white/5 mt-10 print:m-0 print:p-0 print:border-none">
+        <div ref={receiptRef} className="max-w-6xl mx-auto px-4 py-12 animate-fadeIn border-t border-slate-200 mt-10 print:m-0 print:p-0 print:border-none">
            <div className="text-center mb-8 no-print">
-             <h3 className="text-[#FFD700] text-xs font-black uppercase tracking-[0.4em] italic mb-2">Pratinjau Dokumen Rasmi</h3>
-             <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Sila semak butiran sebelum mencetak atau menyimpan</p>
+             <h3 className="text-black text-xs font-black uppercase tracking-[0.4em] italic mb-2">Pratinjau Dokumen Rasmi</h3>
+             <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Sila semak butiran sebelum mencetak atau menyimpan</p>
            </div>
            <div className="w-full overflow-x-auto pb-4 custom-scrollbar print:overflow-visible print:pb-0">
-             <div className="w-[148mm] md:mx-auto shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-white/10 rounded-3xl overflow-hidden bg-white mx-auto shrink-0 print:shadow-none print:border-none print:rounded-none">
+             <div className="w-[148mm] md:mx-auto shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-slate-200 rounded-3xl overflow-hidden bg-white mx-auto shrink-0 print:shadow-none print:border-none print:rounded-none">
               <Receipt data={receiptData} logo={firmLogo} onClose={() => setReceiptData(null)} />
              </div>
            </div>
