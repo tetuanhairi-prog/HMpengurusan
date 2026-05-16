@@ -146,7 +146,7 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
               <h3 className="text-black dark:text-white text-[10px] font-black uppercase tracking-[0.3em] mb-6 border-b border-slate-200 dark:border-white/10 pb-4 italic">Konfigurasi Penyata</h3>
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="block text-[9px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">Nota Tambahan</label>
+                  <label className="block text-[9px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">Nota Tambahan</label>
                   <textarea 
                     value={ledgerNotes}
                     onChange={e => setLedgerNotes(e.target.value)}
@@ -155,7 +155,7 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="block text-[9px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">Tapis Tarikh</label>
+                  <label className="block text-[9px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">Tapis Tarikh</label>
                   <div className="grid grid-cols-2 gap-2">
                     <input type="date" value={ledgerStartDate} onChange={e => setLedgerStartDate(e.target.value)} className="bg-white dark:bg-[#000000] border border-slate-200 dark:border-white/10 rounded-xl p-3 text-[10px] font-bold text-slate-900 dark:text-white outline-none focus:border-slate-300 dark:border-white/20 w-full" />
                     <input type="date" value={ledgerEndDate} onChange={e => setLedgerEndDate(e.target.value)} className="bg-white dark:bg-[#000000] border border-slate-200 dark:border-white/10 rounded-xl p-3 text-[10px] font-bold text-slate-900 dark:text-white outline-none focus:border-slate-300 dark:border-white/20 w-full" />
@@ -171,10 +171,10 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
               <table className="w-full text-left border-collapse min-w-[500px]">
                 <thead>
                   <tr className="bg-white dark:bg-[#000000] border-b border-slate-200 dark:border-white/10">
-                    <th className="p-6 text-[9px] uppercase font-black tracking-[0.2em] text-slate-500 dark:text-gray-500">Tarikh</th>
-                    <th className="p-6 text-[9px] uppercase font-black tracking-[0.2em] text-slate-500 dark:text-gray-500">Butiran Transaksi</th>
-                    <th className="p-6 text-[9px] uppercase font-black tracking-[0.2em] text-slate-500 dark:text-gray-500 text-right">Amaun (RM)</th>
-                    <th className="p-6 text-[9px] uppercase font-black tracking-[0.2em] text-slate-500 dark:text-gray-500 text-center"></th>
+                    <th className="p-6 text-[9px] uppercase font-black tracking-[0.2em] text-slate-500 dark:text-slate-300">Tarikh</th>
+                    <th className="p-6 text-[9px] uppercase font-black tracking-[0.2em] text-slate-500 dark:text-slate-300">Butiran Transaksi</th>
+                    <th className="p-6 text-[9px] uppercase font-black tracking-[0.2em] text-slate-500 dark:text-slate-300 text-right">Amaun (RM)</th>
+                    <th className="p-6 text-[9px] uppercase font-black tracking-[0.2em] text-slate-500 dark:text-slate-300 text-center"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-white/10">
@@ -183,7 +183,7 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
                   ) : (
                     client.ledger.map((t, i) => (
                       <tr key={i} className="group hover:bg-slate-100 dark:hover:bg-[#1a1a1a] transition-colors">
-                        <td className="p-6 text-slate-500 dark:text-gray-500 font-bold tabular-nums text-xs whitespace-nowrap">{formatDate(t.date)}</td>
+                        <td className="p-6 text-slate-500 dark:text-slate-300 font-bold tabular-nums text-xs whitespace-nowrap">{formatDate(t.date)}</td>
                         <td className="p-6 text-slate-900 dark:text-white font-black uppercase tracking-tight leading-tight text-sm">{t.desc}</td>
                         <td className={`p-6 text-right font-black text-xl tabular-nums tracking-tighter ${t.amt < 0 ? 'text-emerald-500' : 'text-black dark:text-white'}`}>
                           {t.amt.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
@@ -228,10 +228,10 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
           <p className="text-black dark:text-white text-[10px] font-black uppercase tracking-[0.3em] mt-2">Sistem Pendaftaran & Rekod Kewangan Klien</p>
         </div>
         <div className="flex gap-3">
-          <button onClick={handleExport} className="px-5 py-2.5 bg-slate-100 dark:bg-[#111111] text-slate-600 dark:text-gray-400 border border-slate-200 dark:border-white/10 rounded-full font-black text-[10px] uppercase tracking-widest hover:text-black dark:hover:text-white hover:border-slate-300 dark:border-white/20 transition-all shadow-lg flex items-center gap-2 group">
+          <button onClick={handleExport} className="px-5 py-2.5 bg-slate-100 dark:bg-[#111111] text-slate-600 dark:text-slate-200 border border-slate-200 dark:border-white/10 rounded-full font-black text-[10px] uppercase tracking-widest hover:text-black dark:hover:text-white hover:border-slate-300 dark:border-white/20 transition-all shadow-lg flex items-center gap-2 group">
             <i className="fas fa-file-export group-hover:-translate-y-1 transition-transform"></i> Export Data
           </button>
-          <button onClick={() => fileInputRef.current?.click()} className="px-5 py-2.5 bg-slate-100 dark:bg-[#111111] text-slate-600 dark:text-gray-400 border border-slate-200 dark:border-white/10 rounded-full font-black text-[10px] uppercase tracking-widest hover:text-black dark:hover:text-white hover:border-slate-300 dark:border-white/20 transition-all shadow-lg flex items-center gap-2 group">
+          <button onClick={() => fileInputRef.current?.click()} className="px-5 py-2.5 bg-slate-100 dark:bg-[#111111] text-slate-600 dark:text-slate-200 border border-slate-200 dark:border-white/10 rounded-full font-black text-[10px] uppercase tracking-widest hover:text-black dark:hover:text-white hover:border-slate-300 dark:border-white/20 transition-all shadow-lg flex items-center gap-2 group">
             <i className="fas fa-file-import group-hover:-translate-y-1 transition-transform"></i> Import CSV
           </button>
           <input type="file" ref={fileInputRef} onChange={handleImport} accept=".csv" className="hidden" />
@@ -246,56 +246,56 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
             
             <div className="space-y-5">
               <div className="space-y-1.5">
-                <label className="block text-[9px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">Nama Penuh Klien</label>
+                <label className="block text-[9px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">Nama Penuh Klien</label>
                 <input 
                   type="text" 
                   value={name} 
                   onChange={e => setName(e.target.value)} 
-                  className="w-full bg-white dark:bg-[#000000] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white p-4 rounded-2xl focus:outline-none focus:border-slate-300 dark:border-white/20 transition-all text-sm font-bold placeholder:text-gray-800" 
+                  className="w-full bg-white dark:bg-[#000000] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white p-4 rounded-2xl focus:outline-none focus:border-slate-300 dark:border-white/20 transition-all text-sm font-bold placeholder:text-gray-800 dark:placeholder:text-gray-400" 
                   placeholder="Cth: MOHD BIN AHMAD" 
                 />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="block text-[9px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">No. Telefon</label>
+                  <label className="block text-[9px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">No. Telefon</label>
                   <input 
                     type="text" 
                     value={phone} 
                     onChange={e => setPhone(e.target.value)} 
-                    className="w-full bg-white dark:bg-[#000000] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white p-4 rounded-2xl focus:outline-none focus:border-slate-300 dark:border-white/20 transition-all text-sm font-bold placeholder:text-gray-800" 
+                    className="w-full bg-white dark:bg-[#000000] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white p-4 rounded-2xl focus:outline-none focus:border-slate-300 dark:border-white/20 transition-all text-sm font-bold placeholder:text-gray-800 dark:placeholder:text-gray-400" 
                     placeholder="012..." 
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="block text-[9px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">Fee (RM)</label>
+                  <label className="block text-[9px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">Fee (RM)</label>
                   <input 
                     type="number" 
                     value={fee} 
                     onChange={e => setFee(e.target.value)} 
-                    className="w-full bg-white dark:bg-[#000000] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white p-4 rounded-2xl focus:outline-none focus:border-slate-300 dark:border-white/20 transition-all text-sm font-bold placeholder:text-gray-800" 
+                    className="w-full bg-white dark:bg-[#000000] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white p-4 rounded-2xl focus:outline-none focus:border-slate-300 dark:border-white/20 transition-all text-sm font-bold placeholder:text-gray-800 dark:placeholder:text-gray-400" 
                     placeholder="2500" 
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[9px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">Butiran Kes</label>
+                <label className="block text-[9px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">Butiran Kes</label>
                 <input 
                   type="text" 
                   value={detail} 
                   onChange={e => setDetail(e.target.value)} 
-                  className="w-full bg-white dark:bg-[#000000] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white p-4 rounded-2xl focus:outline-none focus:border-slate-300 dark:border-white/20 transition-all text-sm font-bold placeholder:text-gray-800" 
+                  className="w-full bg-white dark:bg-[#000000] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white p-4 rounded-2xl focus:outline-none focus:border-slate-300 dark:border-white/20 transition-all text-sm font-bold placeholder:text-gray-800 dark:placeholder:text-gray-400" 
                   placeholder="Cth: Tuntutan Mutaah" 
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-[9px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">Alamat Kediaman</label>
+                <label className="block text-[9px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">Alamat Kediaman</label>
                 <textarea 
                   value={address} 
                   onChange={e => setAddress(e.target.value)} 
-                  className="w-full bg-white dark:bg-[#000000] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white p-4 rounded-2xl focus:outline-none focus:border-slate-300 dark:border-white/20 transition-all text-sm font-bold placeholder:text-gray-800 h-24 resize-none" 
+                  className="w-full bg-white dark:bg-[#000000] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white p-4 rounded-2xl focus:outline-none focus:border-slate-300 dark:border-white/20 transition-all text-sm font-bold placeholder:text-gray-800 dark:placeholder:text-gray-400 h-24 resize-none" 
                   placeholder="Alamat lengkap..." 
                 />
               </div>
@@ -315,13 +315,13 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
               <div className="flex gap-3">
                 <button 
                   onClick={handleBulkExport}
-                  className="px-4 py-2 bg-slate-100 dark:bg-[#111111] text-black dark:text-white border border-slate-300 dark:border-white/20 rounded-full font-black text-[9px] uppercase tracking-widest hover:bg-black dark:hover:bg-white dark:bg-white hover:text-white dark:hover:text-black transition-all"
+                  className="px-4 py-2 bg-slate-100 dark:bg-[#111111] text-black dark:text-white border border-slate-300 dark:border-white/20 rounded-full font-black text-[9px] uppercase tracking-widest hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all"
                 >
                   <i className="fas fa-file-export mr-2"></i> Export Pilihan
                 </button>
                 <button 
                   onClick={handleBulkDelete}
-                  className="px-4 py-2 bg-slate-200 dark:bg-[#222222] text-black dark:text-white border border-black/30 rounded-full font-black text-[9px] uppercase tracking-widest hover:bg-black dark:hover:bg-white dark:bg-white hover:text-white dark:hover:text-black transition-all"
+                  className="px-4 py-2 bg-slate-200 dark:bg-[#222222] text-black dark:text-white border border-black/30 rounded-full font-black text-[9px] uppercase tracking-widest hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all"
                 >
                   <i className="fas fa-trash-can mr-2"></i> Padam Pilihan
                 </button>
@@ -346,9 +346,9 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
                       }}
                     />
                   </th>
-                  <th className="p-6 text-[10px] uppercase font-black tracking-[0.2em] text-slate-500 dark:text-gray-500">Maklumat Klien & Kes</th>
-                  <th className="p-6 text-[10px] uppercase font-black tracking-[0.2em] text-slate-500 dark:text-gray-500 text-right">Baki Akaun</th>
-                  <th className="p-6 text-[10px] uppercase font-black tracking-[0.2em] text-slate-500 dark:text-gray-500 text-center">Tindakan</th>
+                  <th className="p-6 text-[10px] uppercase font-black tracking-[0.2em] text-slate-500 dark:text-slate-300">Maklumat Klien & Kes</th>
+                  <th className="p-6 text-[10px] uppercase font-black tracking-[0.2em] text-slate-500 dark:text-slate-300 text-right">Baki Akaun</th>
+                  <th className="p-6 text-[10px] uppercase font-black tracking-[0.2em] text-slate-500 dark:text-slate-300 text-center">Tindakan</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-white/10">
@@ -376,8 +376,8 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
                         <td className="p-6">
                           <div className="flex flex-col">
                             <span className="text-slate-900 dark:text-white font-black text-lg uppercase tracking-tight leading-none mb-1 group-hover:text-black dark:hover:text-white transition-colors">{client.name}</span>
-                            <span className="text-slate-500 dark:text-gray-500 text-xs font-bold uppercase tracking-wider italic">{client.detail}</span>
-                            {client.phone && <span className="text-[10px] text-gray-600 mt-2 font-black tabular-nums tracking-widest"><i className="fas fa-phone-alt mr-2 text-black dark:text-white/30"></i>{client.phone}</span>}
+                            <span className="text-slate-500 dark:text-slate-300 text-xs font-bold uppercase tracking-wider italic">{client.detail}</span>
+                            {client.phone && <span className="text-[10px] text-gray-600 mt-2 font-black tabular-nums tracking-widest"><i className="fas fa-phone-alt mr-2 text-black dark:text-white/60"></i>{client.phone}</span>}
                           </div>
                         </td>
                         <td className="p-6 text-right">
@@ -392,13 +392,13 @@ const GuamanPage: React.FC<GuamanPageProps> = ({
                           <div className="flex justify-center gap-3">
                             <button 
                               onClick={() => setSelectedClientIdx(idx)} 
-                              className="px-6 py-2.5 bg-slate-100 dark:bg-[#111111] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-gray-300 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-black dark:hover:bg-white dark:bg-white hover:text-white dark:hover:text-black hover:border-slate-300 dark:border-white/20 transition-all shadow-lg"
+                              className="px-6 py-2.5 bg-slate-100 dark:bg-[#111111] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-100 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black hover:border-slate-300 dark:border-white/20 transition-all shadow-lg"
                             >
                               Buka Ledger
                             </button>
                             <button 
                               onClick={() => { if(confirm('Padam rekod fail ini?')){ onDelete(client.id); }}} 
-                              className="w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-[#111111] text-slate-500 dark:text-gray-500 rounded-full hover:bg-black dark:hover:bg-white dark:bg-white hover:text-slate-900 dark:hover:text-white transition-all border border-slate-200 dark:border-white/10 shadow-lg"
+                              className="w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-[#111111] text-slate-500 dark:text-slate-300 rounded-full hover:bg-black dark:hover:bg-white hover:text-slate-900 dark:hover:text-white transition-all border border-slate-200 dark:border-white/10 shadow-lg"
                             >
                               <i className="fas fa-trash-can text-sm"></i>
                             </button>
@@ -430,7 +430,7 @@ const LedgerForm: React.FC<{ onAdd: (entry: LedgerEntry) => void }> = ({ onAdd }
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-1.5">
-        <label className="block text-[9px] font-black text-slate-500 dark:text-gray-500 uppercase tracking-widest ml-1">Tarikh</label>
+        <label className="block text-[9px] font-black text-slate-500 dark:text-slate-300 uppercase tracking-widest ml-1">Tarikh</label>
         <input 
           type="date" 
           value={date} 
@@ -439,7 +439,7 @@ const LedgerForm: React.FC<{ onAdd: (entry: LedgerEntry) => void }> = ({ onAdd }
         />
       </div>
       <div className="space-y-1.5">
-        <label className="block text-[9px] font-black text-slate-500 dark:text-gray-500 uppercase tracking-widest ml-1">Keterangan</label>
+        <label className="block text-[9px] font-black text-slate-500 dark:text-slate-300 uppercase tracking-widest ml-1">Keterangan</label>
         <input 
           type="text" 
           value={desc} 
@@ -449,7 +449,7 @@ const LedgerForm: React.FC<{ onAdd: (entry: LedgerEntry) => void }> = ({ onAdd }
         />
       </div>
       <div className="space-y-1.5">
-        <label className="block text-[9px] font-black text-slate-500 dark:text-gray-500 uppercase tracking-widest ml-1">Amaun (+/-)</label>
+        <label className="block text-[9px] font-black text-slate-500 dark:text-slate-300 uppercase tracking-widest ml-1">Amaun (+/-)</label>
         <div className="flex gap-2">
           <input 
             type="number" 

@@ -51,14 +51,14 @@ const Header: React.FC<HeaderProps> = ({ logo, theme, onLogoChange, onToggleThem
         <div className="flex gap-2">
           <button 
             onClick={onBackup}
-            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-100 dark:bg-[#111111] border border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-400 hover:text-black dark:hover:text-white hover:border-slate-300 dark:border-white/20 transition-all flex items-center justify-center shadow-lg group"
+            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-100 dark:bg-[#111111] border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-200 hover:text-black dark:hover:text-white hover:border-slate-300 dark:border-white/20 transition-all flex items-center justify-center shadow-lg group"
             title="Backup Semua Data"
           >
             <i className="fas fa-cloud-download-alt text-xs md:text-sm group-hover:scale-110 transition-transform duration-300"></i>
           </button>
           <button 
             onClick={() => restoreInputRef.current?.click()}
-            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-100 dark:bg-[#111111] border border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-400 hover:text-black dark:hover:text-white hover:border-slate-300 dark:border-white/20 transition-all flex items-center justify-center shadow-lg group"
+            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-100 dark:bg-[#111111] border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-200 hover:text-black dark:hover:text-white hover:border-slate-300 dark:border-white/20 transition-all flex items-center justify-center shadow-lg group"
             title="Restore Data dari Fail"
           >
             <i className="fas fa-cloud-upload-alt text-xs md:text-sm group-hover:scale-110 transition-transform duration-300"></i>

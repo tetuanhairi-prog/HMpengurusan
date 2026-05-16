@@ -308,7 +308,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
       <div className="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-slate-200 dark:border-white/10 pb-4">
         <div>
           <h2 className="text-2xl font-black uppercase tracking-tighter text-slate-900 dark:text-white">Penjanaan Dokumen Rasmi</h2>
-          <p className="text-slate-500 dark:text-gray-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-1 italic">Resit Rasmi • Invois • Sebutharga • Baucar Bayaran</p>
+          <p className="text-slate-500 dark:text-slate-300 text-[10px] font-bold uppercase tracking-[0.2em] mt-1 italic">Resit Rasmi • Invois • Sebutharga • Baucar Bayaran</p>
         </div>
         <div className="bg-slate-50 dark:bg-[#0a0a0a] p-1.5 rounded-xl flex flex-wrap gap-1 border border-slate-200 dark:border-white/10 shadow-xl">
           {(['RECEIPT', 'INVOICE', 'QUOTATION', 'PAYMENT_VOUCHER'] as DocType[]).map((type) => (
@@ -318,7 +318,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
               className={`py-2 px-4 md:px-6 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
                 docType === type 
                 ? 'bg-black dark:bg-white text-white dark:text-black shadow-lg shadow-slate-300 scale-[1.02]' 
-                : 'text-slate-500 dark:text-gray-500 hover:text-slate-900 dark:hover:text-white hover:bg-white/5'
+                : 'text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/5'
               }`}
             >
               {type === 'RECEIPT' ? 'Resit' : type === 'INVOICE' ? 'Invois' : type === 'QUOTATION' ? 'Sebutharga' : 'Baucar Bayaran'}
@@ -333,7 +333,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
           {/* Reference & Date Card */}
           <div className="bg-slate-50 dark:bg-[#0a0a0a] p-5 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xl space-y-4">
             <div className="space-y-1">
-              <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">Tarikh Dokumen</label>
+              <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">Tarikh Dokumen</label>
               <input 
                 type="date" 
                 value={date} 
@@ -350,17 +350,17 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
             </h3>
             <div className="space-y-3">
               <div className="space-y-1">
-                <label className="block text-[9px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">Mod Cetakan Lalai</label>
+                <label className="block text-[9px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">Mod Cetakan Lalai</label>
                 <div className="flex gap-2">
                   <button
                     onClick={() => onUpdateSettings({ defaultPrintMode: 'standard' })}
-                    className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${defaultPrintMode === 'standard' ? 'bg-black dark:bg-white text-white dark:text-black shadow-md shadow-slate-300' : 'bg-white dark:bg-[#000000] text-slate-500 dark:text-gray-500 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:border-white/20'}`}
+                    className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${defaultPrintMode === 'standard' ? 'bg-black dark:bg-white text-white dark:text-black shadow-md shadow-slate-300' : 'bg-white dark:bg-[#000000] text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:border-white/20'}`}
                   >
                     Standard (A5/PDF)
                   </button>
                   <button
                     onClick={() => onUpdateSettings({ defaultPrintMode: 'thermal' })}
-                    className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${defaultPrintMode === 'thermal' ? 'bg-black dark:bg-white text-white dark:text-black shadow-md shadow-slate-300' : 'bg-white dark:bg-[#000000] text-slate-500 dark:text-gray-500 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:border-white/20'}`}
+                    className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${defaultPrintMode === 'thermal' ? 'bg-black dark:bg-white text-white dark:text-black shadow-md shadow-slate-300' : 'bg-white dark:bg-[#000000] text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:border-white/20'}`}
                   >
                     Thermal (80mm)
                   </button>
@@ -368,47 +368,47 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">Nama Syarikat / Header</label>
+                <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">Nama Syarikat / Header</label>
                 <div className="relative">
-                  <i className="fas fa-heading absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-gray-500 text-xs"></i>
+                  <i className="fas fa-heading absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-300 text-xs"></i>
                   <input 
                     type="text" 
                     value="HAIRI MUSTAFA ASSOCIATES"
                     readOnly
-                    className="w-full bg-white/50 dark:bg-black/5 dark:bg-white/50 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-400 p-3 pl-8 rounded-xl outline-none text-xs font-bold uppercase cursor-not-allowed"
+                    className="w-full bg-white/50 dark:bg-black/5 dark:bg-white/50 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-200 p-3 pl-8 rounded-xl outline-none text-xs font-bold uppercase cursor-not-allowed"
                   />
                 </div>
               </div>
               
               <div className="space-y-1">
-                <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">Alamat Syarikat</label>
+                <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">Alamat Syarikat</label>
                 <div className="relative">
-                  <i className="fas fa-building absolute left-3 top-3 text-slate-500 dark:text-gray-500 text-xs"></i>
+                  <i className="fas fa-building absolute left-3 top-3 text-slate-500 dark:text-slate-300 text-xs"></i>
                   <textarea 
                     value="Lot 02, Bangunan Arked Mara, 09100 Baling, Kedah"
                     readOnly
-                    className="w-full bg-white/50 dark:bg-black/5 dark:bg-white/50 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-400 p-3 pl-8 rounded-xl outline-none text-xs font-bold h-12 resize-none cursor-not-allowed"
+                    className="w-full bg-white/50 dark:bg-black/5 dark:bg-white/50 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-200 p-3 pl-8 rounded-xl outline-none text-xs font-bold h-12 resize-none cursor-not-allowed"
                   ></textarea>
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">No. Tel & Emel</label>
+                <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">No. Tel & Emel</label>
                 <div className="relative">
-                  <i className="fas fa-address-book absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-gray-500 text-xs"></i>
+                  <i className="fas fa-address-book absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-300 text-xs"></i>
                   <input 
                     type="text" 
                     value="Tel: 01156531310 | Emel: tetuanhairi@gmail.com"
                     readOnly
-                    className="w-full bg-white/50 dark:bg-black/5 dark:bg-white/50 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-400 p-3 pl-8 rounded-xl outline-none text-xs font-bold cursor-not-allowed"
+                    className="w-full bg-white/50 dark:bg-black/5 dark:bg-white/50 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-200 p-3 pl-8 rounded-xl outline-none text-xs font-bold cursor-not-allowed"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">Nota Kaki / Footer</label>
+                <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">Nota Kaki / Footer</label>
                 <div className="relative">
-                  <i className="fas fa-shoe-prints absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-gray-500 text-xs"></i>
+                  <i className="fas fa-shoe-prints absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-300 text-xs"></i>
                   <input 
                     type="text" 
                     value={customFooter}
@@ -429,9 +429,9 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
             
             <div className="space-y-3">
               <div className="space-y-1">
-                <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">Carian Klien Guaman</label>
+                <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">Carian Klien Guaman</label>
                 <div className="relative">
-                  <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-gray-500 text-xs"></i>
+                  <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-300 text-xs"></i>
                   <select 
                     onChange={handleCustomerSelect}
                     className="w-full bg-white dark:bg-[#000000] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white p-3 pl-8 rounded-xl focus:outline-none focus:border-slate-300 dark:border-white/20 transition-all text-xs font-bold cursor-pointer appearance-none"
@@ -440,16 +440,16 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
                     {clients.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                     <option value="PELANGGAN TUNAI">PELANGGAN TUNAI (CASH)</option>
                   </select>
-                  <i className="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-gray-500 pointer-events-none text-xs"></i>
+                  <i className="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-300 pointer-events-none text-xs"></i>
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className={`block text-[8px] font-black uppercase tracking-widest ml-1 ${showValidation && !selectedCustomer ? 'text-black dark:text-white' : 'text-slate-500 dark:text-gray-500'}`}>
+                <label className={`block text-[8px] font-black uppercase tracking-widest ml-1 ${showValidation && !selectedCustomer ? 'text-black dark:text-white' : 'text-slate-500 dark:text-slate-300'}`}>
                   Nama Penuh {showValidation && !selectedCustomer && "(! WAJIB)"}
                 </label>
                 <div className="relative">
-                  <i className={`fas fa-id-card absolute left-3 top-1/2 -translate-y-1/2 text-xs ${showValidation && !selectedCustomer ? 'text-black dark:text-white' : 'text-slate-500 dark:text-gray-500'}`}></i>
+                  <i className={`fas fa-id-card absolute left-3 top-1/2 -translate-y-1/2 text-xs ${showValidation && !selectedCustomer ? 'text-black dark:text-white' : 'text-slate-500 dark:text-slate-300'}`}></i>
                   <input 
                     type="text" 
                     value={selectedCustomer}
@@ -461,9 +461,9 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">No. Telefon</label>
+                <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">No. Telefon</label>
                 <div className="relative">
-                  <i className="fas fa-phone absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-gray-500 text-xs"></i>
+                  <i className="fas fa-phone absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-300 text-xs"></i>
                   <input 
                     type="text" 
                     value={customerPhone}
@@ -475,9 +475,9 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">Alamat Penuh</label>
+                <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">Alamat Penuh</label>
                 <div className="relative">
-                  <i className="fas fa-map-marker-alt absolute left-3 top-3 text-slate-500 dark:text-gray-500 text-xs"></i>
+                  <i className="fas fa-map-marker-alt absolute left-3 top-3 text-slate-500 dark:text-slate-300 text-xs"></i>
                   <textarea 
                     value={customerAddress}
                     onChange={e => setCustomerAddress(e.target.value.toUpperCase())}
@@ -498,9 +498,9 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
               
               <div className="space-y-3">
                 <div className="space-y-1">
-                  <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">Kaedah Pembayaran</label>
+                  <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">Kaedah Pembayaran</label>
                   <div className="relative">
-                    <i className="fas fa-money-bill-wave absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-gray-500 text-xs"></i>
+                    <i className="fas fa-money-bill-wave absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-300 text-xs"></i>
                     <select 
                       value={paymentMethod}
                       onChange={e => setPaymentMethod(e.target.value)}
@@ -512,14 +512,14 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
                       <option value="KAD KREDIT/DEBIT">KAD KREDIT / DEBIT</option>
                       <option value="LAIN-LAIN">LAIN-LAIN</option>
                     </select>
-                    <i className="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-gray-500 pointer-events-none text-xs"></i>
+                    <i className="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-300 pointer-events-none text-xs"></i>
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">No. Rujukan Transaksi / Cek</label>
+                  <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">No. Rujukan Transaksi / Cek</label>
                   <div className="relative">
-                    <i className="fas fa-hashtag absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-gray-500 text-xs"></i>
+                    <i className="fas fa-hashtag absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-300 text-xs"></i>
                     <input 
                       type="text" 
                       value={paymentRef}
@@ -543,7 +543,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
               <div className="flex gap-2">
                 <button 
                   onClick={addEmptyRow}
-                  className="px-4 py-2 bg-slate-100 dark:bg-[#111111] text-slate-700 dark:text-gray-300 border border-slate-200 dark:border-white/10 rounded-lg text-[9px] font-black uppercase tracking-widest hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:border-white/20 hover:bg-white dark:bg-[#000000] transition-all duration-300 shadow-lg flex items-center gap-1.5 group"
+                  className="px-4 py-2 bg-slate-100 dark:bg-[#111111] text-slate-700 dark:text-slate-100 border border-slate-200 dark:border-white/10 rounded-lg text-[9px] font-black uppercase tracking-widest hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:border-white/20 hover:bg-white dark:bg-[#000000] transition-all duration-300 shadow-lg flex items-center gap-1.5 group"
                 >
                   <i className="fas fa-plus group-hover:rotate-90 transition-transform duration-300"></i> BARIS KOSONG
                 </button>
@@ -555,7 +555,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
               <div className="md:col-span-6 space-y-1">
                 <label className="block text-[8px] font-black uppercase text-black dark:text-white tracking-widest ml-1">Keterangan Manual</label>
                 <div className="relative">
-                  <i className="fas fa-pen absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-gray-500 text-xs"></i>
+                  <i className="fas fa-pen absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-300 text-xs"></i>
                   <input 
                     type="text" 
                     value={manualDesc}
@@ -601,7 +601,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
             <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-white/10">
               <table className="w-full text-left border-collapse min-w-[500px]">
                 <thead>
-                  <tr className="bg-white dark:bg-[#000000] text-slate-500 dark:text-gray-500 text-[8px] font-black uppercase tracking-widest">
+                  <tr className="bg-white dark:bg-[#000000] text-slate-500 dark:text-slate-300 text-[8px] font-black uppercase tracking-widest">
                     <th className="p-3">Butiran</th>
                     <th className="p-3 text-center w-16">Unit</th>
                     <th className="p-3 text-right w-24">Harga (RM)</th>
@@ -661,7 +661,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
             {/* Notes & Ledger Pull */}
             <div className="space-y-4">
               <div className="bg-slate-50 dark:bg-[#0a0a0a] p-5 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xl space-y-2">
-                <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest ml-1">Nota Tambahan</label>
+                <label className="block text-[8px] font-black uppercase text-slate-500 dark:text-slate-300 tracking-widest ml-1">Nota Tambahan</label>
                 <textarea 
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
@@ -688,9 +688,9 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
             <div className="bg-slate-50 dark:bg-[#0a0a0a] p-6 rounded-[32px] border border-slate-200 dark:border-white/10 shadow-xl flex flex-col justify-between items-center text-center relative overflow-hidden group">
               <div className="absolute top-0 left-0 w-full h-1.5 bg-black dark:bg-white"></div>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 dark:text-gray-500 mb-3">Jumlah Keseluruhan</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 dark:text-slate-300 mb-3">Jumlah Keseluruhan</p>
                 <div className="flex items-baseline justify-center gap-2">
-                  <span className="text-xl font-black text-black dark:text-white/30">RM</span>
+                  <span className="text-xl font-black text-black dark:text-white/60">RM</span>
                   <span className="text-5xl font-black tabular-nums tracking-tighter text-slate-900 dark:text-white">{total.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</span>
                 </div>
               </div>
@@ -704,10 +704,10 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
                   <i className="fas fa-print mr-2"></i> Jana & Cetak Baru ({defaultPrintMode === 'standard' ? 'A5/PDF' : 'Thermal'})
                 </BlobButton>
                 <div className="grid grid-cols-2 gap-2">
-                  <button onClick={previewInvoice} disabled={currentItems.length === 0} className="bg-slate-100 dark:bg-[#111111] text-black dark:text-white py-3 rounded-lg font-black uppercase tracking-widest text-[8px] border border-slate-300 dark:border-white/20 hover:bg-black dark:hover:bg-white dark:bg-white hover:text-white dark:hover:text-black transition-all disabled:opacity-30">
+                  <button onClick={previewInvoice} disabled={currentItems.length === 0} className="bg-slate-100 dark:bg-[#111111] text-black dark:text-white py-3 rounded-lg font-black uppercase tracking-widest text-[8px] border border-slate-300 dark:border-white/20 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all disabled:opacity-30">
                     <i className="fas fa-eye mr-1.5"></i> Pratonton Semasa
                   </button>
-                  <button onClick={() => processInvoice('standard', false)} disabled={currentItems.length === 0} className="bg-slate-100 dark:bg-[#111111] text-slate-500 dark:text-gray-500 py-3 rounded-lg font-black uppercase tracking-widest text-[8px] border border-slate-200 dark:border-white/10 hover:bg-white dark:bg-[#000000] transition-all disabled:opacity-30">
+                  <button onClick={() => processInvoice('standard', false)} disabled={currentItems.length === 0} className="bg-slate-100 dark:bg-[#111111] text-slate-500 dark:text-slate-300 py-3 rounded-lg font-black uppercase tracking-widest text-[8px] border border-slate-200 dark:border-white/10 hover:bg-white dark:bg-[#000000] transition-all disabled:opacity-30">
                     Rekod Sahaja
                   </button>
                 </div>
@@ -728,7 +728,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
             <div className="flex gap-2">
               <button 
                 onClick={handleBulkDelete}
-                className="px-3 py-1.5 bg-white dark:bg-[#000000] text-slate-700 dark:text-gray-300 border border-slate-300 dark:border-white/20 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 dark:hover:bg-[#1a1a1a] hover:text-black dark:hover:text-white transition-colors shadow-sm flex items-center gap-2"
+                className="px-3 py-1.5 bg-white dark:bg-[#000000] text-slate-700 dark:text-slate-100 border border-slate-300 dark:border-white/20 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 dark:hover:bg-[#1a1a1a] hover:text-black dark:hover:text-white transition-colors shadow-sm flex items-center gap-2"
               >
                 <i className="fas fa-trash-alt"></i> Padam Pilihan ({selectedDocs.length})
               </button>
@@ -745,7 +745,7 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
         <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-left border-collapse min-w-[800px]">
              <thead>
-               <tr className="bg-white/50 dark:bg-black/5 dark:bg-white/50 text-slate-600 dark:text-gray-400 text-[9px] font-black uppercase tracking-widest border-b border-slate-200 dark:border-white/10">
+               <tr className="bg-white/50 dark:bg-black/5 dark:bg-white/50 text-slate-600 dark:text-slate-200 text-[9px] font-black uppercase tracking-widest border-b border-slate-200 dark:border-white/10">
                  <th className="p-4 rounded-tl-xl w-10 text-center">
                    <input 
                      type="checkbox" 
@@ -786,17 +786,17 @@ const InvoicePage: React.FC<InvoicePageProps> = ({
                          doc.docType === 'RECEIPT' ? 'bg-slate-100 dark:bg-[#111111] text-black dark:text-white border border-slate-200 dark:border-white/10' :
                          doc.docType === 'INVOICE' ? 'bg-black dark:bg-white text-white dark:text-black' :
                          doc.docType === 'QUOTATION' ? 'bg-slate-200 dark:bg-[#222222] text-slate-800 dark:text-white border border-slate-300 dark:border-white/20' :
-                         'bg-slate-100 dark:bg-[#111111] text-slate-600 dark:text-gray-400 border border-slate-200 dark:border-white/10'
+                         'bg-slate-100 dark:bg-[#111111] text-slate-600 dark:text-slate-200 border border-slate-200 dark:border-white/10'
                        }`}>
                          {doc.docType === 'RECEIPT' ? 'RESIT' : 
                           doc.docType === 'INVOICE' ? 'INVOIS' : 
                           doc.docType === 'QUOTATION' ? 'SEBUTHARGA' : 'BAUCAR'}
                        </span>
                      </td>
-                     <td className="p-4 text-xs font-mono text-slate-700 dark:text-gray-300">{doc.docNo}</td>
-                     <td className="p-4 text-xs text-slate-600 dark:text-gray-400">{formatDate(doc.date)}</td>
+                     <td className="p-4 text-xs font-mono text-slate-700 dark:text-slate-100">{doc.docNo}</td>
+                     <td className="p-4 text-xs text-slate-600 dark:text-slate-200">{formatDate(doc.date)}</td>
                      <td className="p-4 text-xs font-bold text-slate-900 dark:text-white uppercase">{doc.customer}</td>
-                     <td className="p-4 text-[10px] text-slate-600 dark:text-gray-400 max-w-[200px] truncate" title={doc.details}>{doc.details}</td>
+                     <td className="p-4 text-[10px] text-slate-600 dark:text-slate-200 max-w-[200px] truncate" title={doc.details}>{doc.details}</td>
                      <td className="p-4 text-right text-xs font-black text-black dark:text-white tabular-nums">
                        {doc.total.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
                      </td>

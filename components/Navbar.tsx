@@ -28,7 +28,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onPageChange }) => {
                 whitespace-nowrap px-6 py-3 text-[10px] sm:text-[11px] font-bold transition-all flex items-center gap-2.5 uppercase tracking-widest rounded-xl
                 ${isActive 
                   ? 'bg-black dark:bg-white text-white dark:text-black shadow-lg shadow-slate-300' 
-                  : 'text-slate-500 dark:text-gray-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#222222]/50'
+                  : 'text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-[#222222]/50'
                 }
                 active:scale-95
               `}
