@@ -174,25 +174,25 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
   // Floating Controls Component for reuse
   const ControlPanel = () => (
     <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[150] flex flex-col items-end gap-3 print:hidden animate-slideUp">
-      <div className="flex flex-col gap-3 bg-white/60 p-2.5 rounded-full backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+      <div className="flex flex-col gap-3 bg-white/60 p-2.5 rounded-full backdrop-blur-xl border border-slate-200 shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
         <button 
           onClick={handlePrint} 
-          className="group bg-slate-100 dark:bg-[#111111] text-black dark:text-white w-12 h-12 md:w-14 md:h-14 rounded-full font-black flex items-center justify-center hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all duration-300 shadow-lg border border-slate-200 dark:border-white/10 hover:scale-110 active:scale-95 relative"
+          className="group bg-slate-100 text-black w-12 h-12 md:w-14 md:h-14 rounded-full font-black flex items-center justify-center hover:bg-black hover:text-white transition-all duration-300 shadow-lg border border-slate-200 hover:scale-110 active:scale-95 relative"
           title="Cetak Dokumen"
         >
           <i className="fas fa-print text-lg md:text-xl"></i>
-          <span className="absolute right-full mr-4 bg-white dark:bg-[#000000] text-slate-900 dark:text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-slate-200 dark:border-white/10">
+          <span className="absolute right-full mr-4 bg-white text-slate-900 text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-slate-200">
             Cetak Dokumen
           </span>
         </button>
 
         <button 
           onClick={handleDownloadPDF} 
-          className="group bg-slate-100 dark:bg-[#111111] text-slate-900 dark:text-white w-12 h-12 md:w-14 md:h-14 rounded-full font-black flex items-center justify-center hover:bg-white dark:bg-[#000000] hover:text-black dark:hover:text-white transition-all duration-300 shadow-lg border border-slate-200 dark:border-white/10 hover:scale-110 active:scale-95 relative"
+          className="group bg-slate-100 text-slate-900 w-12 h-12 md:w-14 md:h-14 rounded-full font-black flex items-center justify-center hover:bg-black hover:text-white transition-all duration-300 shadow-lg border border-slate-200 hover:scale-110 active:scale-95 relative"
           title="Simpan PDF"
         >
           <i className="fas fa-file-pdf text-lg md:text-xl"></i>
-          <span className="absolute right-full mr-4 bg-white dark:bg-[#000000] text-slate-900 dark:text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-slate-200 dark:border-white/10">
+          <span className="absolute right-full mr-4 bg-white text-slate-900 text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-slate-200">
             Simpan PDF
           </span>
         </button>
@@ -201,11 +201,11 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
 
         <button 
           onClick={onClose} 
-          className="group bg-slate-800 dark:bg-white text-white dark:text-black w-12 h-12 md:w-14 md:h-14 rounded-full font-black flex items-center justify-center hover:bg-black dark:hover:bg-white transition-all duration-300 shadow-lg border border-slate-600 hover:scale-110 active:scale-95 relative"
+          className="group bg-slate-800 text-white w-12 h-12 md:w-14 md:h-14 rounded-full font-black flex items-center justify-center hover:bg-black transition-all duration-300 shadow-lg border border-slate-600 hover:scale-110 active:scale-95 relative"
           title="Tutup Pratonton"
         >
           <i className="fas fa-times text-lg md:text-xl"></i>
-          <span className="absolute right-full mr-4 bg-white dark:bg-[#000000] text-slate-900 dark:text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-slate-200 dark:border-white/10">
+          <span className="absolute right-full mr-4 bg-white text-slate-900 text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-slate-200">
             Tutup Pratonton
           </span>
         </button>
@@ -215,12 +215,12 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
 
   if (isThermal) {
     return (
-      <div ref={receiptRef} id="receipt-print" className="bg-white dark:bg-[#000000] text-black dark:text-white p-4 w-[80mm] mx-auto font-mono text-[12px] animate-fadeIn relative print:m-0 print:w-full">
+      <div ref={receiptRef} id="receipt-print" className="bg-white text-black p-4 w-[80mm] mx-auto font-mono text-[12px] animate-fadeIn relative print:m-0 print:w-full">
         <div className="text-center mb-6">
           <img src={displayLogo} crossOrigin="anonymous" alt="Logo" className="h-14 mx-auto mb-2 grayscale" />
           <h1 className="font-bold text-lg leading-tight uppercase">HAIRI MUSTAFA ASSOCIATES</h1>
           <p className="text-[10px] uppercase">Peguam Syarie & Pesuruhjaya Sumpah</p>
-          <div className="border-t border-dashed border-black dark:border-white/20 mt-2 pt-2">
+          <div className="border-t border-dashed border-black mt-2 pt-2">
             <h2 className="font-bold text-base underline uppercase">{labels.typeLabel}</h2>
           </div>
         </div>
@@ -242,10 +242,10 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
           )}
         </div>
 
-        <div className="border-y border-dashed border-black dark:border-white/20 py-2 mb-4">
+        <div className="border-y border-dashed border-black py-2 mb-4">
           <table className="w-full text-left">
             <thead>
-              <tr className="font-bold border-b border-black dark:border-white/20">
+              <tr className="font-bold border-b border-black">
                 <th className="pb-1">BUTIRAN</th>
                 <th className="pb-1 text-right">RM</th>
               </tr>
@@ -266,7 +266,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
           <p className="text-lg font-black tracking-tighter">RM {data.total.toLocaleString('en-MY', { minimumFractionDigits: 2 })}</p>
         </div>
 
-        <div className="text-center space-y-4 pt-4 border-t border-dashed border-black dark:border-white/20">
+        <div className="text-center space-y-4 pt-4 border-t border-dashed border-black">
           <p className="text-[10px] italic">*** DOKUMEN SISTEM DIGITAL ***</p>
           <p className="text-[8px] opacity-50 uppercase tracking-widest">Sistem HMA v2.5</p>
         </div>
@@ -277,7 +277,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
   }
 
   return (
-    <div ref={receiptRef} id="receipt-print" className="text-black dark:text-white p-6 md:p-8 w-[148mm] min-h-[210mm] relative flex flex-col overflow-hidden animate-fadeIn bg-white dark:bg-[#000000] print:shadow-none print:border-0 print:p-6 print:w-[148mm] print:h-[210mm] print:min-h-0" 
+    <div ref={receiptRef} id="receipt-print" className="text-black p-6 md:p-8 w-[148mm] min-h-[210mm] relative flex flex-col overflow-hidden animate-fadeIn bg-white print:shadow-none print:border-0 print:p-6 print:w-[148mm] print:h-[210mm] print:min-h-0" 
          style={{ background: '#ffffff' }}>
       
       {/* High-End Paper Fiber Texture Overlay */}
@@ -289,22 +289,22 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
 
       {/* Elegant Large Diagonal Watermark */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden select-none opacity-[0.01]">
-        <span className="text-black dark:text-white font-bold text-[80px] -rotate-[35deg] uppercase tracking-[0.8em] font-sans">
+        <span className="text-black font-bold text-[80px] -rotate-[35deg] uppercase tracking-[0.8em] font-sans">
           {labels.watermark}
         </span>
       </div>
 
       {/* Header Section: Professional Letterhead Identity */}
-      <div className="relative z-10 flex flex-row items-start justify-between mb-4 pb-3 border-b border-black dark:border-white/20">
+      <div className="relative z-10 flex flex-row items-start justify-between mb-4 pb-3 border-b border-black">
         <div className="flex flex-row items-center gap-4">
           <div className="shrink-0">
              <img src={displayLogo} crossOrigin="anonymous" alt="Logo" className="h-16 w-auto object-contain" />
           </div>
           <div className="flex-1 flex flex-col justify-center">
-            <h1 className="text-xl font-bold m-0 leading-none uppercase text-black dark:text-white tracking-tight font-legal">
+            <h1 className="text-xl font-bold m-0 leading-none uppercase text-black tracking-tight font-legal">
               HAIRI MUSTAFA ASSOCIATES
             </h1>
-            <p className="text-[9px] font-black m-0 uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300 mt-0.5 font-sans">
+            <p className="text-[9px] font-black m-0 uppercase tracking-[0.2em] text-slate-500 mt-0.5 font-sans">
               Peguam Syarie & Pesuruhjaya Sumpah
             </p>
             <div className="text-[7px] mt-1.5 text-gray-600 leading-tight font-sans font-medium uppercase tracking-[0.05em] max-w-xs whitespace-pre-line">
@@ -316,7 +316,7 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
         </div>
         
         <div className="shrink-0">
-            <div className="border border-black dark:border-white/20 px-4 py-2 bg-white dark:bg-[#000000] text-black dark:text-white min-w-[120px] text-center shadow-[3px_3px_0px_rgba(255,215,0,1)]">
+            <div className="border border-black px-4 py-2 bg-white text-black min-w-[120px] text-center shadow-[3px_3px_0px_rgba(255,215,0,1)]">
                 <span className="text-[7px] font-black tracking-[0.15em] uppercase block mb-0.5 border-b border-black/5 pb-0.5 font-sans opacity-50">DOKUMEN RASMI</span>
                 <span className="text-lg font-bold uppercase tracking-widest leading-none font-legal">
                   {labels.typeLabel}
@@ -328,28 +328,28 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
       {/* Information Grid: Reference and Client Details */}
       <div className="relative z-10 grid grid-cols-2 gap-6 mb-4">
         <div className="space-y-1.5">
-            <div className="p-3 border border-gray-100 bg-white dark:bg-[#000000] shadow-sm min-h-[80px] relative group">
+            <div className="p-3 border border-gray-100 bg-white shadow-sm min-h-[80px] relative group">
                 <div className="absolute top-0 left-0 w-[3px] h-full bg-legal-gold"></div>
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity print:hidden text-slate-700 dark:text-slate-100 text-xs pointer-events-none">
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity print:hidden text-slate-700 text-xs pointer-events-none">
                   <i className="fas fa-edit"></i>
                 </div>
-                <p className="text-slate-600 dark:text-slate-200 uppercase text-[8px] font-black mb-1.5 tracking-[0.15em] italic font-sans">
+                <p className="text-slate-600 uppercase text-[8px] font-black mb-1.5 tracking-[0.15em] italic font-sans">
                   {labels.customerLabel}
                 </p>
                 <textarea
                   value={localCustomer}
                   onChange={e => { setLocalCustomer(e.target.value.toUpperCase()); handleResize(e); }}
                   onFocus={handleResize}
-                  className="auto-resize font-bold text-lg uppercase leading-tight text-black dark:text-white mb-0.5 font-legal bg-transparent border-none p-0 focus:outline-none w-full hover:bg-white/5 transition-colors print:hover:bg-transparent resize-none overflow-hidden"
+                  className="auto-resize font-bold text-lg uppercase leading-tight text-black mb-0.5 font-legal bg-transparent border-none p-0 focus:outline-none w-full hover:bg-white/5 transition-colors print:hover:bg-transparent resize-none overflow-hidden"
                   placeholder="NAMA KLIEN"
                   rows={1}
                 />
-                {data.customerPhone && <p className="text-[9px] font-black text-slate-500 dark:text-slate-300 tracking-[0.05em] uppercase font-sans">T: {data.customerPhone}</p>}
+                {data.customerPhone && <p className="text-[9px] font-black text-slate-500 tracking-[0.05em] uppercase font-sans">T: {data.customerPhone}</p>}
                 <textarea
                   value={localAddress}
                   onChange={e => { setLocalAddress(e.target.value.toUpperCase()); handleResize(e); }}
                   onFocus={handleResize}
-                  className="auto-resize text-[8px] text-slate-500 dark:text-slate-300 uppercase leading-tight font-medium mt-1.5 max-w-[180px] w-full italic font-sans bg-transparent border-none p-0 focus:outline-none resize-none hover:bg-white/5 transition-colors print:hover:bg-transparent overflow-hidden"
+                  className="auto-resize text-[8px] text-slate-500 uppercase leading-tight font-medium mt-1.5 max-w-[180px] w-full italic font-sans bg-transparent border-none p-0 focus:outline-none resize-none hover:bg-white/5 transition-colors print:hover:bg-transparent overflow-hidden"
                   placeholder="ALAMAT KLIEN..."
                   rows={3}
                 />
@@ -358,13 +358,13 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
         
         <div className="text-right flex flex-col items-end justify-start gap-3 pt-1">
             <div className="flex flex-col items-end">
-                <p className="text-slate-600 dark:text-slate-200 uppercase text-[8px] font-black tracking-[0.15em] mb-0.5 font-sans">Tarikh Dokumen / Date</p>
-                <p className="font-black text-lg text-black dark:text-white tabular-nums leading-none font-sans">{formatDate(data.date)}</p>
+                <p className="text-slate-600 uppercase text-[8px] font-black tracking-[0.15em] mb-0.5 font-sans">Tarikh Dokumen / Date</p>
+                <p className="font-black text-lg text-black tabular-nums leading-none font-sans">{formatDate(data.date)}</p>
             </div>
             {data.paymentMethod && (data.docType === 'RECEIPT' || data.docType === 'PAYMENT_VOUCHER') && (
               <div className="flex flex-col items-end mt-1">
-                  <p className="text-slate-600 dark:text-slate-200 uppercase text-[8px] font-black tracking-[0.15em] mb-0.5 font-sans">Kaedah Bayaran</p>
-                  <p className="font-bold text-[10px] text-black dark:text-white uppercase font-sans">{data.paymentMethod} {data.paymentRef ? `(${data.paymentRef})` : ''}</p>
+                  <p className="text-slate-600 uppercase text-[8px] font-black tracking-[0.15em] mb-0.5 font-sans">Kaedah Bayaran</p>
+                  <p className="font-bold text-[10px] text-black uppercase font-sans">{data.paymentMethod} {data.paymentRef ? `(${data.paymentRef})` : ''}</p>
               </div>
             )}
         </div>
@@ -374,24 +374,24 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
       <div className="relative z-10 flex-grow mb-3">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="border-y border-black dark:border-white/20 bg-white/[0.01]">
-              <th className="py-1.5 px-3 text-left text-[8px] font-black uppercase tracking-[0.1em] text-black dark:text-white font-sans">
+            <tr className="border-y border-black bg-white/[0.01]">
+              <th className="py-1.5 px-3 text-left text-[8px] font-black uppercase tracking-[0.1em] text-black font-sans">
                 Butiran Perkhidmatan & Transaksi
               </th>
-              <th className="py-1.5 px-3 text-right text-[8px] font-black uppercase tracking-[0.1em] w-28 text-black dark:text-white font-sans">
+              <th className="py-1.5 px-3 text-right text-[8px] font-black uppercase tracking-[0.1em] w-28 text-black font-sans">
                 Amaun (RM)
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-black/5 border-b border-black dark:border-white/20">
+          <tbody className="divide-y divide-black/5 border-b border-black">
             {data.items.map((item, idx) => (
-              <tr key={idx} className="bg-white dark:bg-[#000000]">
+              <tr key={idx} className="bg-white">
                 <td className="py-2 px-3">
-                    <p className="font-bold text-[11px] uppercase tracking-tight text-black dark:text-white leading-tight font-sans">
+                    <p className="font-bold text-[11px] uppercase tracking-tight text-black leading-tight font-sans">
                       {item.name}
                     </p>
                 </td>
-                <td className={`py-2 px-3 text-right font-black tabular-nums text-base font-sans ${item.price < 0 ? 'text-green-700' : 'text-black dark:text-white'}`}>
+                <td className={`py-2 px-3 text-right font-black tabular-nums text-base font-sans ${item.price < 0 ? 'text-green-700' : 'text-black'}`}>
                   {item.price.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
                 </td>
               </tr>
@@ -405,9 +405,9 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
         <div className="flex flex-row justify-between items-end gap-4">
           <div className="flex-1">
             {data.notes && (
-              <div className="mb-3 p-2 border border-black/5 rounded-sm bg-white dark:bg-[#000000] italic text-[9px] text-gray-700 leading-tight shadow-sm relative">
+              <div className="mb-3 p-2 border border-black/5 rounded-sm bg-white italic text-[9px] text-gray-700 leading-tight shadow-sm relative">
                   <div className="absolute top-0 left-0 w-0.5 h-full bg-legal-gold/20"></div>
-                  <p className="text-[7px] font-black uppercase tracking-[0.1em] text-slate-600 dark:text-slate-200 mb-0.5 not-italic font-sans">Nota / Remarks</p>
+                  <p className="text-[7px] font-black uppercase tracking-[0.1em] text-slate-600 mb-0.5 not-italic font-sans">Nota / Remarks</p>
                   {data.notes}
               </div>
             )}
@@ -415,19 +415,19 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
               <div className="text-[8px] font-black text-gray-600 uppercase tracking-[0.05em] font-sans">
                 * {labels.footerNote}
               </div>
-              <div className="text-[7px] font-bold text-slate-700 dark:text-slate-100 uppercase tracking-[0.15em] italic font-sans select-none">
+              <div className="text-[7px] font-bold text-slate-700 uppercase tracking-[0.15em] italic font-sans select-none">
                 DOKUMEN PENJANAAN SISTEM DIGITAL - SAH TANPA TANDATANGAN
               </div>
             </div>
           </div>
 
-          <div className="min-w-[180px] text-right p-3 bg-white dark:bg-[#000000] border-2 border-black dark:border-white/20 shadow-[4px_4px_0px_rgba(255,215,0,1)] relative">
-              <p className="text-[9px] font-black uppercase tracking-[0.15em] mb-1.5 text-slate-600 dark:text-slate-200 text-center font-sans">
+          <div className="min-w-[180px] text-right p-3 bg-white border-2 border-black shadow-[4px_4px_0px_rgba(255,215,0,1)] relative">
+              <p className="text-[9px] font-black uppercase tracking-[0.15em] mb-1.5 text-slate-600 text-center font-sans">
                 {labels.totalLabel}
               </p>
               <div className="flex items-baseline justify-center gap-1.5">
                 <span className="text-base font-black opacity-20 font-sans">RM</span>
-                <span className="text-3xl font-black tabular-nums tracking-tighter leading-none text-black dark:text-white font-sans">
+                <span className="text-3xl font-black tabular-nums tracking-tighter leading-none text-black font-sans">
                     {data.total.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
                 </span>
               </div>
@@ -437,8 +437,8 @@ const Receipt: React.FC<ReceiptProps> = ({ data, logo, onClose }) => {
         {/* Professional Firm Footer */}
         <div className="flex justify-between items-center pt-3 border-t border-gray-100">
           <div>
-             <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-black dark:text-white font-legal">HAIRI MUSTAFA ASSOCIATES</p>
-             <p className="text-[8px] font-bold text-slate-600 dark:text-slate-200 uppercase tracking-widest mt-0.5 font-sans">
+             <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-black font-legal">HAIRI MUSTAFA ASSOCIATES</p>
+             <p className="text-[8px] font-bold text-slate-600 uppercase tracking-widest mt-0.5 font-sans">
                {data.customFooter || 'Peguam Syarie & Pesuruhjaya Sumpah'}
              </p>
           </div>

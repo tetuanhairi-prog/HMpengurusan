@@ -254,7 +254,7 @@ const App: React.FC = () => {
              <p className="text-slate-500 dark:text-slate-300 text-[10px] font-bold uppercase tracking-widest">Sila semak butiran sebelum mencetak atau menyimpan</p>
            </div>
            <div className="w-full overflow-x-auto pb-4 custom-scrollbar print:overflow-visible print:pb-0">
-             <div className="w-[148mm] md:mx-auto shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-slate-200 dark:border-white/10 rounded-3xl overflow-hidden bg-white dark:bg-[#000000] mx-auto shrink-0 print:shadow-none print:border-none print:rounded-none">
+             <div className="w-[148mm] md:mx-auto shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-slate-200 rounded-3xl overflow-hidden bg-white mx-auto shrink-0 print:shadow-none print:border-none print:rounded-none">
               <Receipt data={receiptData} logo={firmLogo} onClose={() => setReceiptData(null)} />
              </div>
            </div>
