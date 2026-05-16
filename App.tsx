@@ -157,12 +157,26 @@ const App: React.FC = () => {
 
   const { currentPage, activeClientIdx, clients, pjsRecords, inventory, invCounter, firmLogo, theme } = state;
   const showLedger = currentPage === 'guaman' && activeClientIdx !== null && activeClientIdx < clients.length;
-  const isDarkMode = theme === 'dark';
+  
+  const [isPrinting, setIsPrinting] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleBeforePrint = () => setIsPrinting(true);
+    const handleAfterPrint = () => setIsPrinting(false);
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
+    return () => {
+      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('afterprint', handleAfterPrint);
+    };
+  }, []);
+
+  const isDarkMode = theme === 'dark' && !isPrinting;
 
   return (
-    <div className="min-h-screen pb-10 transition-colors duration-500 bg-white text-black">
+    <div className={`${isDarkMode ? 'dark' : ''} min-h-screen pb-10 transition-colors duration-500 bg-white dark:bg-[#0a0a0a] text-black dark:text-white`}>
       <div className="max-w-6xl mx-auto px-4 py-8 no-print">
-        <div className="rounded-3xl border shadow-2xl overflow-hidden transition-all bg-slate-50 border-slate-200">
+        <div className="rounded-3xl border shadow-2xl overflow-hidden transition-all bg-slate-50 dark:bg-[#111111] border-slate-200 dark:border-[#222222]">
           <Header 
             logo={firmLogo} 
             theme={theme} 
@@ -234,13 +248,13 @@ const App: React.FC = () => {
       </div>
 
       {receiptData && (
-        <div ref={receiptRef} className="max-w-6xl mx-auto px-4 py-12 animate-fadeIn border-t border-slate-200 mt-10 print:m-0 print:p-0 print:border-none">
+        <div ref={receiptRef} className="max-w-6xl mx-auto px-4 py-12 animate-fadeIn border-t border-slate-200 dark:border-white/10 mt-10 print:m-0 print:p-0 print:border-none">
            <div className="text-center mb-8 no-print">
-             <h3 className="text-black text-xs font-black uppercase tracking-[0.4em] italic mb-2">Pratinjau Dokumen Rasmi</h3>
-             <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Sila semak butiran sebelum mencetak atau menyimpan</p>
+             <h3 className="text-black dark:text-white text-xs font-black uppercase tracking-[0.4em] italic mb-2">Pratinjau Dokumen Rasmi</h3>
+             <p className="text-slate-500 dark:text-gray-500 text-[10px] font-bold uppercase tracking-widest">Sila semak butiran sebelum mencetak atau menyimpan</p>
            </div>
            <div className="w-full overflow-x-auto pb-4 custom-scrollbar print:overflow-visible print:pb-0">
-             <div className="w-[148mm] md:mx-auto shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-slate-200 rounded-3xl overflow-hidden bg-white mx-auto shrink-0 print:shadow-none print:border-none print:rounded-none">
+             <div className="w-[148mm] md:mx-auto shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-slate-200 dark:border-white/10 rounded-3xl overflow-hidden bg-white dark:bg-[#000000] mx-auto shrink-0 print:shadow-none print:border-none print:rounded-none">
               <Receipt data={receiptData} logo={firmLogo} onClose={() => setReceiptData(null)} />
              </div>
            </div>
